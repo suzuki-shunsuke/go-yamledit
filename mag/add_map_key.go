@@ -53,11 +53,11 @@ func (a *AddMapKeyAction) Run(node ast.Node) error {
 	return nil
 }
 
-var NoopError = errors.New("")
+var ErrNoop = errors.New("")
 
 func (a *AddMapKeyAction) add(m *ast.MappingNode) error {
 	k, v, idx, err := a.Add(m)
-	if errors.Is(err, NoopError) {
+	if errors.Is(err, ErrNoop) {
 		return nil
 	}
 	if idx < 0 {
@@ -104,7 +104,7 @@ type staticAddMapKeyEditor struct {
 	idx   int
 }
 
-func (e *staticAddMapKeyEditor) Add(node *ast.MappingNode) (any, any, int, error) {
+func (e *staticAddMapKeyEditor) Add(_ *ast.MappingNode) (any, any, int, error) {
 	return e.key, e.value, e.idx, nil
 }
 

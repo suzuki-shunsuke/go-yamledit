@@ -9,7 +9,7 @@ import (
 
 type noop struct{}
 
-var Noop = noop{}
+var Noop = noop{} //nolint:gochecknoglobals
 
 func IsChanged(value any) bool {
 	_, ok := value.(noop)

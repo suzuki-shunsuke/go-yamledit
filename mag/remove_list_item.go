@@ -50,7 +50,7 @@ func (a *RemoveListItemAction) remove(elem ast.Node) error {
 		return fmt.Errorf("expected a sequence node: %s", elem.Type().String())
 	}
 	idx, err := a.Remove(seq)
-	if errors.Is(err, NoopError) {
+	if errors.Is(err, ErrNoop) {
 		return nil
 	}
 	if err != nil {

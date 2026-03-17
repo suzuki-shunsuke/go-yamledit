@@ -9,12 +9,12 @@ type MappingValueMatcher interface {
 	Match(kv *ast.MappingValueNode) (bool, error)
 }
 
-func NewKeyMVMatcher(key string) *KeyMVMatcher {
-	return &KeyMVMatcher{key: key}
-}
-
 type KeyMVMatcher struct {
 	key string
+}
+
+func NewKeyMVMatcher(key string) *KeyMVMatcher {
+	return &KeyMVMatcher{key: key}
 }
 
 func (m *KeyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
