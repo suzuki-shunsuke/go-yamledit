@@ -8,10 +8,6 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type Action interface {
-	Run(node ast.Node) error
-}
-
 type RemoveKeyAction struct {
 	YAMLPath string
 	Key      any
