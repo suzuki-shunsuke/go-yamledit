@@ -22,11 +22,11 @@ age: 10 # keep comment
 	actions := []mag.Action{
 		&mag.RemoveKeyAction{
 			YAMLPath: "$",
-			Key:      "name",
+			Matcher:  mag.NewKeyMVMatcher("name"),
 		},
 		&mag.RemoveKeyAction{
 			YAMLPath: "$",
-			Key:      "id", // unknown key
+			Matcher:  mag.NewKeyMVMatcher("id"), // unknown key
 		},
 	}
 	for _, act := range actions {
@@ -53,7 +53,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\nage: 10\n",
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
-				Key:      "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 			},
 			want: "age: 10\n",
 		},
@@ -62,7 +62,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
-				Key:      "missing",
+				Matcher:  mag.NewKeyMVMatcher("missing"),
 			},
 			want: "name: foo\n",
 		},
@@ -71,7 +71,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml:  "foo:\n  bar: 1\n  baz: 2\n",
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.foo",
-				Key:      "bar",
+				Matcher:  mag.NewKeyMVMatcher("bar"),
 			},
 			want: "foo:\n  baz: 2\n",
 		},
@@ -80,7 +80,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.items",
-				Key:      "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 			},
 			want: "items:\n- val: 1\n- val: 2\n",
 		},
@@ -89,7 +89,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.RemoveKeyAction{
 				YAMLPath: "invalid[",
-				Key:      "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 			},
 			wantErr: true,
 		},

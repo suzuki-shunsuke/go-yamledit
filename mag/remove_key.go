@@ -10,7 +10,7 @@ import (
 
 type RemoveKeyAction struct {
 	YAMLPath string
-	Key      any
+	Matcher  MappingValueMatcher
 }
 
 func (a *RemoveKeyAction) Run(node ast.Node) error {
@@ -45,12 +45,11 @@ func (a *RemoveKeyAction) removeKeyFromMap(m *ast.MappingNode) error {
 	idx := 0
 	mapIter := m.MapRange()
 	for mapIter.Next() {
-		k := mapIter.Key()
-		var keyV any
-		if err := yaml.NodeToValue(k, &keyV); err != nil {
+		f, err := a.Matcher.Match(mapIter.KeyValue())
+		if err != nil {
 			return err
 		}
-		if !compareKey(a.Key, keyV) {
+		if !f {
 			idx++
 			continue
 		}
