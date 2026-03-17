@@ -24,3 +24,9 @@ func (m *KeyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
 	}
 	return compareKey(m.key, keyV), nil
 }
+
+type AllMVMatcher struct{}
+
+func (m *AllMVMatcher) Match(_ *ast.MappingValueNode) (bool, error) {
+	return true, nil
+}

@@ -22,12 +22,12 @@ age: 10 # keep comment 2
 	actions := []mag.Action{
 		&mag.RenameKeyAction{
 			YAMLPath: "$",
-			OldKey:   "name",
+			Matcher:  mag.NewKeyMVMatcher("name"),
 			NewKey:   "id",
 		},
 		&mag.RenameKeyAction{
 			YAMLPath: "$",
-			OldKey:   "password", // unknown key
+			Matcher:  mag.NewKeyMVMatcher("password"), // unknown key
 			NewKey:   "passwd",
 		},
 	}
@@ -56,7 +56,7 @@ func TestRenameKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\nage: 10\n",
 			action: mag.RenameKeyAction{
 				YAMLPath: "$",
-				OldKey:   "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 				NewKey:   "id",
 			},
 			want: "id: foo\nage: 10\n",
@@ -66,7 +66,7 @@ func TestRenameKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.RenameKeyAction{
 				YAMLPath: "$",
-				OldKey:   "missing",
+				Matcher:  mag.NewKeyMVMatcher("missing"),
 				NewKey:   "found",
 			},
 			want: "name: foo\n",
@@ -76,7 +76,7 @@ func TestRenameKeyAction_Run(t *testing.T) {
 			yml:  "foo:\n  bar: 1\n  baz: 2\n",
 			action: mag.RenameKeyAction{
 				YAMLPath: "$.foo",
-				OldKey:   "bar",
+				Matcher:  mag.NewKeyMVMatcher("bar"),
 				NewKey:   "qux",
 			},
 			// The YAML library resets indentation on the renamed key node.
@@ -87,7 +87,7 @@ func TestRenameKeyAction_Run(t *testing.T) {
 			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
 			action: mag.RenameKeyAction{
 				YAMLPath: "$.items",
-				OldKey:   "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 				NewKey:   "id",
 			},
 			want: "items:\n- id: a\n    val: 1\n- id: b\n    val: 2\n",
@@ -97,7 +97,7 @@ func TestRenameKeyAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.RenameKeyAction{
 				YAMLPath: "invalid[",
-				OldKey:   "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 				NewKey:   "id",
 			},
 			wantErr: true,

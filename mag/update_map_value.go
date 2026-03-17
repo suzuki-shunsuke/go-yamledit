@@ -1,6 +1,7 @@
 package mag
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/goccy/go-yaml"
@@ -9,11 +10,14 @@ import (
 
 type UpdateMapValueAction struct {
 	YAMLPath string
-	Key      any
+	Matcher  MappingValueMatcher
 	Value    any
 }
 
 func (a *UpdateMapValueAction) Run(node ast.Node) error {
+	if a.Matcher == nil {
+		return errors.New("matcher is not set")
+	}
 	path, err := yaml.PathString(a.YAMLPath)
 	if err != nil {
 		return fmt.Errorf("parse a YAML path: %w", err)
@@ -45,13 +49,15 @@ func (a *UpdateMapValueAction) updateMapValue(m *ast.MappingNode) error {
 	mapIter := m.MapRange()
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
-		var keyV any
-		if err := yaml.NodeToValue(keyValue.Key, &keyV); err != nil {
+
+		f, err := a.Matcher.Match(keyValue)
+		if err != nil {
 			return err
 		}
-		if !compareKey(a.Key, keyV) {
+		if !f {
 			continue
 		}
+
 		n, err := yaml.ValueToNode(a.Value)
 		if err != nil {
 			return err

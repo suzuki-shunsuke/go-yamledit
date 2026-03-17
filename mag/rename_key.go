@@ -10,11 +10,14 @@ import (
 
 type RenameKeyAction struct {
 	YAMLPath string
-	OldKey   any
+	Matcher  MappingValueMatcher
 	NewKey   any
 }
 
 func (a *RenameKeyAction) Run(node ast.Node) error {
+	if a.Matcher == nil {
+		return errors.New("matcher is not set")
+	}
 	path, err := yaml.PathString(a.YAMLPath)
 	if err != nil {
 		return fmt.Errorf("parse a YAML path: %w", err)
@@ -46,13 +49,15 @@ func (a *RenameKeyAction) renameMapKey(m *ast.MappingNode) error {
 	mapIter := m.MapRange()
 	for mapIter.Next() {
 		kv := mapIter.KeyValue()
-		var keyV any
-		if err := yaml.NodeToValue(kv.Key, &keyV); err != nil {
+
+		f, err := a.Matcher.Match(kv)
+		if err != nil {
 			return err
 		}
-		if !compareKey(a.OldKey, keyV) {
+		if !f {
 			continue
 		}
+
 		comment := kv.Key.GetComment()
 		v, err := yaml.ValueToNode(a.NewKey)
 		if err != nil {

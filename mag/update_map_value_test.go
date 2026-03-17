@@ -22,12 +22,12 @@ age: 10 # keep comment 2
 	actions := []mag.Action{
 		&mag.UpdateMapValueAction{
 			YAMLPath: "$",
-			Key:      "name",
+			Matcher:  mag.NewKeyMVMatcher("name"),
 			Value:    "new name",
 		},
 		&mag.UpdateMapValueAction{
 			YAMLPath: "$",
-			Key:      "password", // unknown key
+			Matcher:  mag.NewKeyMVMatcher("password"), // unknown key
 			Value:    "***",
 		},
 	}
@@ -56,7 +56,7 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 			yml:  "name: foo\nage: 10\n",
 			action: mag.UpdateMapValueAction{
 				YAMLPath: "$",
-				Key:      "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 				Value:    "bar",
 			},
 			want: "name: bar\nage: 10\n",
@@ -66,7 +66,7 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.UpdateMapValueAction{
 				YAMLPath: "$",
-				Key:      "missing",
+				Matcher:  mag.NewKeyMVMatcher("missing"),
 				Value:    "val",
 			},
 			want: "name: foo\n",
@@ -76,7 +76,7 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 			yml:  "foo:\n  bar: 1\n  baz: 2\n",
 			action: mag.UpdateMapValueAction{
 				YAMLPath: "$.foo",
-				Key:      "bar",
+				Matcher:  mag.NewKeyMVMatcher("bar"),
 				Value:    99,
 			},
 			want: "foo:\n  bar: 99\n  baz: 2\n",
@@ -86,7 +86,7 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
 			action: mag.UpdateMapValueAction{
 				YAMLPath: "$.items",
-				Key:      "val",
+				Matcher:  mag.NewKeyMVMatcher("val"),
 				Value:    100,
 			},
 			want: "items:\n- name: a\n  val: 100\n- name: b\n  val: 100\n",
@@ -96,7 +96,7 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 			yml:  "name: foo\n",
 			action: mag.UpdateMapValueAction{
 				YAMLPath: "invalid[",
-				Key:      "name",
+				Matcher:  mag.NewKeyMVMatcher("name"),
 				Value:    "bar",
 			},
 			wantErr: true,
