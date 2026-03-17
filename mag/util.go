@@ -5,14 +5,12 @@ import (
 	"reflect"
 )
 
-type unchanged struct{}
+type noop struct{}
 
-func Unchanged() any {
-	return unchanged{}
-}
+var Noop = noop{}
 
 func IsChanged(value any) bool {
-	_, ok := value.(unchanged)
+	_, ok := value.(noop)
 	return !ok
 }
 
