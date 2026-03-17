@@ -5,6 +5,17 @@ import (
 	"reflect"
 )
 
+type unchanged struct{}
+
+func Unchanged() any {
+	return unchanged{}
+}
+
+func IsChanged(value any) bool {
+	_, ok := value.(unchanged)
+	return !ok
+}
+
 func unifyInt(value any) (any, bool) {
 	switch v := value.(type) {
 	case int, int64, uint64:

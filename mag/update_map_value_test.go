@@ -9,7 +9,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleUpdateMapValueAction_Run() {
+func ExampleEditMapValueAction_Run() {
 	yml := `
 name: foo # keep comment
 age: 10 # keep comment 2
@@ -20,15 +20,15 @@ age: 10 # keep comment 2
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		&mag.UpdateMapValueAction{
+		&mag.EditMapValueAction{
 			YAMLPath: "$",
 			Matcher:  mag.NewKeyMVMatcher("name"),
-			Value:    "new name",
+			Editor:   mag.NewFixedEditor(mag.Unchanged(), "new name"),
 		},
-		&mag.UpdateMapValueAction{
+		&mag.EditMapValueAction{
 			YAMLPath: "$",
 			Matcher:  mag.NewKeyMVMatcher("password"), // unknown key
-			Value:    "***",
+			Editor:   mag.NewFixedEditor(mag.Unchanged(), "***"),
 		},
 	}
 	for _, act := range actions {
@@ -47,57 +47,57 @@ func TestUpdateMapValueAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.UpdateMapValueAction
+		action  mag.EditMapValueAction
 		want    string
 		wantErr bool
 	}{
 		{
 			name: "update root value",
 			yml:  "name: foo\nage: 10\n",
-			action: mag.UpdateMapValueAction{
+			action: mag.EditMapValueAction{
 				YAMLPath: "$",
 				Matcher:  mag.NewKeyMVMatcher("name"),
-				Value:    "bar",
+				Editor:   mag.NewFixedEditor(mag.Unchanged(), "bar"),
 			},
 			want: "name: bar\nage: 10\n",
 		},
 		{
 			name: "key not found",
 			yml:  "name: foo\n",
-			action: mag.UpdateMapValueAction{
+			action: mag.EditMapValueAction{
 				YAMLPath: "$",
 				Matcher:  mag.NewKeyMVMatcher("missing"),
-				Value:    "val",
+				Editor:   mag.NewFixedEditor(mag.Unchanged(), "val"),
 			},
 			want: "name: foo\n",
 		},
 		{
 			name: "nested path",
 			yml:  "foo:\n  bar: 1\n  baz: 2\n",
-			action: mag.UpdateMapValueAction{
+			action: mag.EditMapValueAction{
 				YAMLPath: "$.foo",
 				Matcher:  mag.NewKeyMVMatcher("bar"),
-				Value:    99,
+				Editor:   mag.NewFixedEditor(mag.Unchanged(), 99),
 			},
 			want: "foo:\n  bar: 99\n  baz: 2\n",
 		},
 		{
 			name: "sequence of mappings",
 			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
-			action: mag.UpdateMapValueAction{
+			action: mag.EditMapValueAction{
 				YAMLPath: "$.items",
 				Matcher:  mag.NewKeyMVMatcher("val"),
-				Value:    100,
+				Editor:   mag.NewFixedEditor(mag.Unchanged(), 100),
 			},
 			want: "items:\n- name: a\n  val: 100\n- name: b\n  val: 100\n",
 		},
 		{
 			name: "invalid yaml path",
 			yml:  "name: foo\n",
-			action: mag.UpdateMapValueAction{
+			action: mag.EditMapValueAction{
 				YAMLPath: "invalid[",
 				Matcher:  mag.NewKeyMVMatcher("name"),
-				Value:    "bar",
+				Editor:   mag.NewFixedEditor(mag.Unchanged(), "bar"),
 			},
 			wantErr: true,
 		},

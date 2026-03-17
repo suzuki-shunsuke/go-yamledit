@@ -8,13 +8,13 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type UpdateMapValueAction struct {
+type EditMapValueAction struct {
 	YAMLPath string
 	Matcher  MappingValueMatcher
-	Value    any
+	Editor   MappingValueEditor
 }
 
-func (a *UpdateMapValueAction) Run(node ast.Node) error {
+func (a *EditMapValueAction) Run(node ast.Node) error {
 	if a.Matcher == nil {
 		return errors.New("matcher is not set")
 	}
@@ -28,14 +28,14 @@ func (a *UpdateMapValueAction) Run(node ast.Node) error {
 	}
 	switch v := n.(type) {
 	case *ast.MappingNode:
-		return a.updateMapValue(v)
+		return a.editMapValue(v)
 	case *ast.SequenceNode:
 		for _, elem := range v.Values {
 			m, ok := elem.(*ast.MappingNode)
 			if !ok {
 				continue
 			}
-			if err := a.updateMapValue(m); err != nil {
+			if err := a.editMapValue(m); err != nil {
 				return err
 			}
 		}
@@ -45,7 +45,7 @@ func (a *UpdateMapValueAction) Run(node ast.Node) error {
 	}
 }
 
-func (a *UpdateMapValueAction) updateMapValue(m *ast.MappingNode) error {
+func (a *EditMapValueAction) editMapValue(m *ast.MappingNode) error {
 	mapIter := m.MapRange()
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
@@ -58,16 +58,50 @@ func (a *UpdateMapValueAction) updateMapValue(m *ast.MappingNode) error {
 			continue
 		}
 
-		n, err := yaml.ValueToNode(a.Value)
+		newKey, newValue, err := a.Editor.Edit(keyValue)
 		if err != nil {
 			return err
 		}
-		comment := keyValue.Value.GetComment()
-		keyValue.Value = n
-		if err := keyValue.Value.SetComment(comment); err != nil {
-			return err
+		if IsChanged(newKey) {
+			if err := a.editKey(keyValue, newKey); err != nil {
+				return fmt.Errorf("edit key: %w", err)
+			}
 		}
-		return nil
+		if IsChanged(newValue) {
+			if err := a.editValue(keyValue, newValue); err != nil {
+				return fmt.Errorf("edit value: %w", err)
+			}
+		}
 	}
+	return nil
+}
+
+func (a *EditMapValueAction) editKey(keyValue *ast.MappingValueNode, newKey any) error {
+	comment := keyValue.Key.GetComment()
+	v, err := yaml.ValueToNode(newKey)
+	if err != nil {
+		return err
+	}
+	if err := v.SetComment(comment); err != nil {
+		return fmt.Errorf("set comment to new key: %w", err)
+	}
+	k, ok := v.(ast.MapKeyNode)
+	if !ok {
+		return errors.New("failed to convert value to map key node")
+	}
+	keyValue.Key = k
+	return nil
+}
+
+func (a *EditMapValueAction) editValue(keyValue *ast.MappingValueNode, newValue any) error {
+	comment := keyValue.Value.GetComment()
+	v, err := yaml.ValueToNode(newValue)
+	if err != nil {
+		return err
+	}
+	if err := v.SetComment(comment); err != nil {
+		return fmt.Errorf("set comment to new value: %w", err)
+	}
+	keyValue.Value = v
 	return nil
 }
