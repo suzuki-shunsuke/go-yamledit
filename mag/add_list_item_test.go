@@ -52,63 +52,110 @@ func TestAddListItemAction_Run(t *testing.T) {
 	}{
 		{
 			name: "add to beginning",
-			yml:  "items:\n- a\n- b\n",
+			yml: `items:
+- a
+- b
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("first", 0),
 			},
-			want: "items:\n- first\n- a\n- b\n",
+			want: `items:
+- first
+- a
+- b
+`,
 		},
 		{
 			name: "add to end",
-			yml:  "items:\n- a\n- b\n",
+			yml: `items:
+- a
+- b
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("last", 2),
 			},
-			want: "items:\n- a\n- b\n- last\n",
+			want: `items:
+- a
+- b
+- last
+`,
 		},
 		{
 			name: "add to middle",
-			yml:  "items:\n- a\n- b\n- c\n",
+			yml: `items:
+- a
+- b
+- c
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("mid", 1),
 			},
-			want: "items:\n- a\n- mid\n- b\n- c\n",
+			want: `items:
+- a
+- mid
+- b
+- c
+`,
 		},
 		{
 			name: "nested path",
-			yml:  "foo:\n  items:\n  - x\n  - y\n",
+			yml: `foo:
+  items:
+  - x
+  - y
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.foo.items",
 				Add:      mag.NewStaticAddListItemEditor("z", 0),
 			},
-			want: "foo:\n  items:\n  - z\n  - x\n  - y\n",
+			want: `foo:
+  items:
+  - z
+  - x
+  - y
+`,
 		},
 		{
 			name: "with comment preservation",
-			yml:  "items:\n- a # comment1\n- b # comment2\n",
+			yml: `items:
+- a # comment1
+- b # comment2
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("new", 1),
 			},
-			want: "items:\n- a # comment1\n- new\n- b # comment2\n",
+			want: `items:
+- a # comment1
+- new
+- b # comment2
+`,
 		},
 		{
 			name: "Add returns Noop",
-			yml:  "items:\n- a\n- b\n",
+			yml: `items:
+- a
+- b
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add: func(_ *ast.SequenceNode) (any, int, error) {
 					return mag.Noop, 0, nil
 				},
 			},
-			want: "items:\n- a\n- b\n",
+			want: `items:
+- a
+- b
+`,
 		},
 		{
 			name: "invalid yaml path",
-			yml:  "items:\n- a\n",
+			yml: `items:
+- a
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "invalid[",
 				Add:      mag.NewStaticAddListItemEditor("x", 0),
@@ -117,7 +164,9 @@ func TestAddListItemAction_Run(t *testing.T) {
 		},
 		{
 			name: "Add is nil",
-			yml:  "items:\n- a\n",
+			yml: `items:
+- a
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 			},
@@ -125,7 +174,9 @@ func TestAddListItemAction_Run(t *testing.T) {
 		},
 		{
 			name: "negative depth",
-			yml:  "items:\n- a\n",
+			yml: `items:
+- a
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("x", 0),
@@ -135,13 +186,25 @@ func TestAddListItemAction_Run(t *testing.T) {
 		},
 		{
 			name: "depth with sequence of sequences",
-			yml:  "items:\n- - a\n  - b\n- - c\n  - d\n",
+			yml: `items:
+- - a
+  - b
+- - c
+  - d
+`,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddListItemEditor("new", 0),
 				Depth:    1,
 			},
-			want: "items:\n- - new\n  - a\n  - b\n- - new\n  - c\n  - d\n",
+			want: `items:
+- - new
+  - a
+  - b
+- - new
+  - c
+  - d
+`,
 		},
 	}
 	for _, tt := range tests {

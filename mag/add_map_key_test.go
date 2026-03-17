@@ -52,81 +52,132 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 	}{
 		{
 			name: "add to beginning",
-			yml:  "name: foo\nage: 10\n",
+			yml: `name: foo
+age: 10
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add:      mag.NewStaticAddMapKeyEditor("first", true, 0),
 			},
-			want: "first: true\nname: foo\nage: 10\n",
+			want: `first: true
+name: foo
+age: 10
+`,
 		},
 		{
 			name: "add to end",
-			yml:  "name: foo\nage: 10\n",
+			yml: `name: foo
+age: 10
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add:      mag.NewStaticAddMapKeyEditor("last", "val", 2),
 			},
-			want: "name: foo\nage: 10\nlast: val\n",
+			want: `name: foo
+age: 10
+last: val
+`,
 		},
 		{
 			name: "add to middle",
-			yml:  "a: 1\nb: 2\nc: 3\n",
+			yml: `a: 1
+b: 2
+c: 3
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add:      mag.NewStaticAddMapKeyEditor("mid", "x", 1),
 			},
-			want: "a: 1\nmid: x\nb: 2\nc: 3\n",
+			want: `a: 1
+mid: x
+b: 2
+c: 3
+`,
 		},
 		{
 			name: "negative index",
-			yml:  "a: 1\nb: 2\nc: 3\n",
+			yml: `a: 1
+b: 2
+c: 3
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add:      mag.NewStaticAddMapKeyEditor("neg", "x", -1),
 			},
-			want: "a: 1\nb: 2\nneg: x\nc: 3\n",
+			want: `a: 1
+b: 2
+neg: x
+c: 3
+`,
 		},
 		{
 			name: "nested path",
-			yml:  "foo:\n  bar: 1\n  baz: 2\n",
+			yml: `foo:
+  bar: 1
+  baz: 2
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$.foo",
 				Add:      mag.NewStaticAddMapKeyEditor("qux", 99, 0),
 			},
-			want: "foo:\nqux: 99\n  bar: 1\n  baz: 2\n",
+			want: `foo:
+qux: 99
+  bar: 1
+  baz: 2
+`,
 		},
 		{
 			name: "with comment on value",
-			yml:  "name: foo\n",
+			yml: `name: foo
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add:      mag.NewStaticAddMapKeyEditor("color", mag.WithComment("red", "a nice color"), 0),
 			},
-			want: "color: red #a nice color\nname: foo\n",
+			want: `color: red #a nice color
+name: foo
+`,
 		},
 		{
 			name: "sequence of mappings",
-			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
+			yml: `items:
+- name: a
+  val: 1
+- name: b
+  val: 2
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$.items",
 				Add:      mag.NewStaticAddMapKeyEditor("new", true, 0),
 			},
-			want: "items:\n- new: true\n    name: a\n    val: 1\n- new: true\n    name: b\n    val: 2\n",
+			want: `items:
+- new: true
+    name: a
+    val: 1
+- new: true
+    name: b
+    val: 2
+`,
 		},
 		{
 			name: "Add returns ErrNoop",
-			yml:  "name: foo\nage: 10\n",
+			yml: `name: foo
+age: 10
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 				Add: func(_ *ast.MappingNode) (any, any, int, error) {
 					return nil, nil, 0, mag.ErrNoop
 				},
 			},
-			want: "name: foo\nage: 10\n",
+			want: `name: foo
+age: 10
+`,
 		},
 		{
 			name: "invalid yaml path",
-			yml:  "name: foo\n",
+			yml: `name: foo
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "invalid[",
 				Add:      mag.NewStaticAddMapKeyEditor("x", "y", 0),
@@ -135,7 +186,8 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 		},
 		{
 			name: "Add is nil",
-			yml:  "name: foo\n",
+			yml: `name: foo
+`,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
 			},

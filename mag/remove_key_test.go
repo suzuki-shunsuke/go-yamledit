@@ -50,43 +50,62 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 	}{
 		{
 			name: "remove root key",
-			yml:  "name: foo\nage: 10\n",
+			yml: `name: foo
+age: 10
+`,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
 				Matcher:  mag.NewKeyMVMatcher("name"),
 			},
-			want: "age: 10\n",
+			want: `age: 10
+`,
 		},
 		{
 			name: "key not found",
-			yml:  "name: foo\n",
+			yml: `name: foo
+`,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
 				Matcher:  mag.NewKeyMVMatcher("missing"),
 			},
-			want: "name: foo\n",
+			want: `name: foo
+`,
 		},
 		{
 			name: "nested path",
-			yml:  "foo:\n  bar: 1\n  baz: 2\n",
+			yml: `foo:
+  bar: 1
+  baz: 2
+`,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.foo",
 				Matcher:  mag.NewKeyMVMatcher("bar"),
 			},
-			want: "foo:\n  baz: 2\n",
+			want: `foo:
+  baz: 2
+`,
 		},
 		{
 			name: "sequence of mappings",
-			yml:  "items:\n- name: a\n  val: 1\n- name: b\n  val: 2\n",
+			yml: `items:
+- name: a
+  val: 1
+- name: b
+  val: 2
+`,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.items",
 				Matcher:  mag.NewKeyMVMatcher("name"),
 			},
-			want: "items:\n- val: 1\n- val: 2\n",
+			want: `items:
+- val: 1
+- val: 2
+`,
 		},
 		{
 			name: "invalid yaml path",
-			yml:  "name: foo\n",
+			yml: `name: foo
+`,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "invalid[",
 				Matcher:  mag.NewKeyMVMatcher("name"),
