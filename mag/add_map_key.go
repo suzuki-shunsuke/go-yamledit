@@ -13,10 +13,6 @@ import (
 // map
 //   [x] Add key to a map
 //   [ ] Sort keys
-// slice
-//   [ ] Add element to a slice
-//   [ ] Remove element from a slice
-//   [ ] Sort slice
 // comment
 //   [ ] Add comment
 //   [ ] Remove comment
@@ -25,22 +21,6 @@ import (
 type AddMapKeyAction struct {
 	YAMLPath string
 	Add      AddMapKey
-}
-
-type valueWithComment struct {
-	Value   any
-	Comment string
-}
-
-func WithComment(v any, comment string) any {
-	return &valueWithComment{
-		Value: v, Comment: comment,
-	}
-}
-
-func commentGroupFromString(s string) *ast.CommentGroupNode {
-	tk := token.Comment(s, "# "+s, &token.Position{})
-	return ast.CommentGroup([]*token.Token{tk})
 }
 
 type AddMapKey func(node *ast.MappingNode) (any, any, int, error)
@@ -57,23 +37,20 @@ func (a *AddMapKeyAction) Run(node ast.Node) error {
 	if err != nil {
 		return fmt.Errorf("filter node by YAML Path: %w", err)
 	}
-	switch v := n.(type) {
-	case *ast.MappingNode:
-		return a.add(v)
-	case *ast.SequenceNode:
-		for _, elem := range v.Values {
-			m, ok := elem.(*ast.MappingNode)
-			if !ok {
-				continue
-			}
-			if err := a.add(m); err != nil {
-				return err
-			}
-		}
-		return nil
-	default:
-		return nil
+	nodes, err := flatten(n, -1)
+	if err != nil {
+		return err
 	}
+	for _, elem := range nodes {
+		m, ok := elem.(*ast.MappingNode)
+		if !ok {
+			return fmt.Errorf("expected a mapping node, got %s", elem.Type().String())
+		}
+		if err := a.add(m); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 var NoopError = errors.New("")
@@ -119,16 +96,6 @@ func (a *AddMapKeyAction) add(m *ast.MappingNode) error {
 	mvn := ast.MappingValue(tk, keyNode, vn)
 	m.Values = append(m.Values[:idx], append([]*ast.MappingValueNode{mvn}, m.Values[idx:]...)...)
 	return nil
-}
-
-func toValueWithComment(v any) *valueWithComment {
-	a, ok := v.(*valueWithComment)
-	if ok {
-		return a
-	}
-	return &valueWithComment{
-		Value: v,
-	}
 }
 
 type staticAddMapKeyEditor struct {

@@ -60,7 +60,7 @@ type: yoo # keep comment 3
 	// type-2: yoo-2 # keep comment 3
 }
 
-func TestUpdateMapValueAction_Run(t *testing.T) {
+func TestEditMapValueAction_Run(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name    string

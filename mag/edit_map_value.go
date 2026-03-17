@@ -26,23 +26,21 @@ func (a *EditMapValueAction) Run(node ast.Node) error {
 	if err != nil {
 		return fmt.Errorf("filter node by YAML Path: %w", err)
 	}
-	switch v := n.(type) {
-	case *ast.MappingNode:
-		return a.editMapValue(v)
-	case *ast.SequenceNode:
-		for _, elem := range v.Values {
-			m, ok := elem.(*ast.MappingNode)
-			if !ok {
-				continue
-			}
-			if err := a.editMapValue(m); err != nil {
-				return err
-			}
-		}
-		return nil
-	default:
-		return nil
+
+	nodes, err := flatten(n, -1)
+	if err != nil {
+		return err
 	}
+	for _, elem := range nodes {
+		e, ok := elem.(*ast.MappingNode)
+		if !ok {
+			return fmt.Errorf("element is not a mapping node: %s", elem.Type().String())
+		}
+		if err := a.editMapValue(e); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *EditMapValueAction) editMapValue(m *ast.MappingNode) error {
