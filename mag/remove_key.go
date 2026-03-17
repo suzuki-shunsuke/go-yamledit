@@ -1,6 +1,7 @@
 package mag
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 
@@ -14,6 +15,9 @@ type RemoveKeyAction struct {
 }
 
 func (a *RemoveKeyAction) Run(node ast.Node) error {
+	if a.Matcher == nil {
+		return errors.New("matcher is not set")
+	}
 	path, err := yaml.PathString(a.YAMLPath)
 	if err != nil {
 		return fmt.Errorf("parse a YAML path: %w", err)
