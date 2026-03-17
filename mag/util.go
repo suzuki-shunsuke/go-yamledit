@@ -1,20 +1,21 @@
 package mag
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+)
 
-func unifyInt(value any) any {
+func unifyInt(value any) (any, bool) {
 	switch v := value.(type) {
-	case int64:
-		return int(v)
-	case uint64:
-		return int(v)
+	case int, int64, uint64:
+		return fmt.Sprintf("%d", v), true
 	default:
-		return value
+		return value, false
 	}
 }
 
 func compareKey(key, keyNodeValue any) bool {
-	uKey := unifyInt(key)
-	uKeyNodeValue := unifyInt(keyNodeValue)
-	return reflect.DeepEqual(uKey, uKeyNodeValue)
+	uKey, b1 := unifyInt(key)
+	uKeyNodeValue, b2 := unifyInt(keyNodeValue)
+	return b1 == b2 && reflect.DeepEqual(uKey, uKeyNodeValue)
 }

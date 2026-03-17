@@ -5,42 +5,51 @@ import "testing"
 func Test_unifyInt(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name  string
-		input any
-		want  any
+		name     string
+		input    any
+		want     any
+		wantBool bool
 	}{
 		{
-			name:  "int64",
-			input: int64(42),
-			want:  int(42),
+			name:     "int64",
+			input:    int64(42),
+			want:     "42",
+			wantBool: true,
 		},
 		{
-			name:  "uint64",
-			input: uint64(42),
-			want:  int(42),
+			name:     "uint64",
+			input:    uint64(42),
+			want:     "42",
+			wantBool: true,
 		},
 		{
-			name:  "string passthrough",
-			input: "hello",
-			want:  "hello",
+			name:     "string passthrough",
+			input:    "hello",
+			want:     "hello",
+			wantBool: false,
 		},
 		{
-			name:  "int passthrough",
-			input: int(42),
-			want:  int(42),
+			name:     "int passthrough",
+			input:    int(42),
+			want:     "42",
+			wantBool: true,
 		},
 		{
-			name:  "bool passthrough",
-			input: true,
-			want:  true,
+			name:     "bool passthrough",
+			input:    true,
+			want:     true,
+			wantBool: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := unifyInt(tt.input)
+			got, gotBool := unifyInt(tt.input)
 			if got != tt.want {
 				t.Errorf("unifyInt(%v) = %v (%T), want %v (%T)", tt.input, got, got, tt.want, tt.want)
+			}
+			if gotBool != tt.wantBool {
+				t.Errorf("unifyInt(%v) bool = %v, want %v", tt.input, gotBool, tt.wantBool)
 			}
 		})
 	}

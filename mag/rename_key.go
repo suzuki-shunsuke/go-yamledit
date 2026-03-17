@@ -58,7 +58,9 @@ func (a *RenameKeyAction) renameMapKey(m *ast.MappingNode) error {
 		if err != nil {
 			return err
 		}
-		v.SetComment(comment)
+		if err := v.SetComment(comment); err != nil {
+			return fmt.Errorf("set comment to new key: %w", err)
+		}
 		k, ok := v.(ast.MapKeyNode)
 		if !ok {
 			return errors.New("failed to convert value to map key node")
