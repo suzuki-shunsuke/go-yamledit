@@ -27,37 +27,41 @@ children:
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		&mag.EditMapValueAction{
-			// Edit name to "ryan"
+		&mag.MapActions{
 			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("name"),
-			Edit:     mag.EditMappingValueStatic(mag.NoChange, "ryan"),
+			Actions: []mag.MapAction{
+				&mag.EditMapValueAction{
+					// Edit name to "ryan"
+					Match: mag.MatchMappingValueByKey("name"),
+					Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
+				},
+				&mag.RemoveKeyAction{
+					// Remove the key "age"
+					Match: mag.MatchMappingValueByKey("age"),
+				},
+				&mag.AddMapKeyAction{
+					// Add the key "gender"
+					Add: mag.AddStaticValueToMappingValue("gender", "male", 1),
+				},
+			},
 		},
-		&mag.RemoveKeyAction{
-			// Remove the key "age"
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("age"),
-		},
-		&mag.AddMapKeyAction{
-			// Add the key "gender"
-			YAMLPath: "$",
-			Add:      mag.AddStaticValueToMappingValue("gender", "male", 1),
-		},
-		&mag.RemoveListItemAction{
-			// Remove child whose index is 1
+		&mag.ListActions{
 			YAMLPath: "$.children",
-			Remove:   mag.RemoveListItemsByIndex(1),
-		},
-		&mag.AddListItemAction{
-			// Add child.
-			YAMLPath: "$.children",
-			Add:      mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
-		},
-		&mag.SortListAction[Child]{
-			// Sort children by name
-			YAMLPath: "$.children",
-			Sort: func(a, b *mag.Item[Child]) int {
-				return strings.Compare(a.Value.Name, b.Value.Name)
+			Actions: []mag.ListAction{
+				&mag.RemoveListItemAction{
+					// Remove child whose index is 1
+					Remove: mag.RemoveListItemsByIndex(1),
+				},
+				&mag.AddListItemAction{
+					// Add child.
+					Add: mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
+				},
+				&mag.SortListAction[Child]{
+					// Sort children by name
+					Sort: func(a, b *mag.Item[Child]) int {
+						return strings.Compare(a.Value.Name, b.Value.Name)
+					},
+				},
 			},
 		},
 	}

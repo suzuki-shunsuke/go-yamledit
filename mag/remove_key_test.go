@@ -19,20 +19,19 @@ age: 10 # keep comment
 	if err != nil {
 		log.Fatal(err)
 	}
-	actions := []mag.Action{
-		&mag.RemoveKeyAction{
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("name"),
-		},
-		&mag.RemoveKeyAction{
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("id"), // unknown key
+	act := &mag.MapActions{
+		YAMLPath: "$",
+		Actions: []mag.MapAction{
+			&mag.RemoveKeyAction{
+				Match: mag.MatchMappingValueByKey("name"),
+			},
+			&mag.RemoveKeyAction{
+				Match: mag.MatchMappingValueByKey("id"), // unknown key
+			},
 		},
 	}
-	for _, act := range actions {
-		if err := act.Run(file.Docs[0].Body); err != nil {
-			log.Fatal(err)
-		}
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
@@ -44,7 +43,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.RemoveKeyAction
+		action  mag.MapActions
 		want    string
 		wantErr bool
 	}{
@@ -53,9 +52,13 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.RemoveKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Match:    mag.MatchMappingValueByKey("name"),
+				Actions: []mag.MapAction{
+					&mag.RemoveKeyAction{
+						Match: mag.MatchMappingValueByKey("name"),
+					},
+				},
 			},
 			want: `age: 10
 `,
@@ -64,9 +67,13 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.RemoveKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Match:    mag.MatchMappingValueByKey("missing"),
+				Actions: []mag.MapAction{
+					&mag.RemoveKeyAction{
+						Match: mag.MatchMappingValueByKey("missing"),
+					},
+				},
 			},
 			want: `name: foo
 `,
@@ -77,9 +84,13 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.RemoveKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$.foo",
-				Match:    mag.MatchMappingValueByKey("bar"),
+				Actions: []mag.MapAction{
+					&mag.RemoveKeyAction{
+						Match: mag.MatchMappingValueByKey("bar"),
+					},
+				},
 			},
 			want: `foo:
   baz: 2
@@ -93,9 +104,13 @@ age: 10
 - name: b
   val: 2
 `,
-			action: mag.RemoveKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$.items",
-				Match:    mag.MatchMappingValueByKey("name"),
+				Actions: []mag.MapAction{
+					&mag.RemoveKeyAction{
+						Match: mag.MatchMappingValueByKey("name"),
+					},
+				},
 			},
 			want: `items:
 - val: 1
@@ -106,9 +121,13 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action: mag.RemoveKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "invalid[",
-				Match:    mag.MatchMappingValueByKey("name"),
+				Actions: []mag.MapAction{
+					&mag.RemoveKeyAction{
+						Match: mag.MatchMappingValueByKey("name"),
+					},
+				},
 			},
 			wantErr: true,
 		},

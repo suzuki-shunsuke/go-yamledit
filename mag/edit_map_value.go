@@ -10,53 +10,13 @@ import (
 
 // EditMapValueAction represents an action to edit a map key and value.
 type EditMapValueAction struct {
-	// YAMLPath is a path to YAML mapping value that key or value will be changed.
-	// e.g. "$.reviewer"
-	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
-	YAMLPath string
 	// Match filters mapping keys and values to be edited.
 	Match MatchMappingValue
 	// Edit edits keys and values.
 	Edit EditMappingValue
 }
 
-// Run edits mapping keys and values.
-func (a *EditMapValueAction) Run(node ast.Node) error {
-	if a.YAMLPath == "" {
-		return errors.New("yaml path is not set")
-	}
-	if a.Match == nil {
-		return errors.New("matcher is not set")
-	}
-	if a.Edit == nil {
-		return errors.New("editor is not set")
-	}
-	path, err := yaml.PathString(a.YAMLPath)
-	if err != nil {
-		return fmt.Errorf("parse a YAML path: %w", err)
-	}
-	n, err := path.FilterNode(node)
-	if err != nil {
-		return fmt.Errorf("filter node by YAML Path: %w", err)
-	}
-
-	nodes, err := flatten(n, -1)
-	if err != nil {
-		return err
-	}
-	for _, elem := range nodes {
-		e, ok := elem.(*ast.MappingNode)
-		if !ok {
-			return fmt.Errorf("element is not a mapping node: %s", elem.Type().String())
-		}
-		if err := a.editMapValue(e); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (a *EditMapValueAction) editMapValue(m *ast.MappingNode) error {
+func (a *EditMapValueAction) Run(m *ast.MappingNode) error {
 	mapIter := m.MapRange()
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
