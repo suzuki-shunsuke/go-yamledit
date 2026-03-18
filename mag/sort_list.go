@@ -10,29 +10,28 @@ import (
 )
 
 // SortListAction represents an action to sort lists.
-type SortListAction struct {
+type SortListAction[T any] struct {
 	// YAMLPath is a path to YAML sequence nodes that new items will be sorted.
 	// e.g. "$.reviewers"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
 	// Sort is a function to sort list.
-	Sort SortList
+	Sort func(a, b *Item[T]) int
 }
 
-// SortedItem is a list item to be sorted.
-type SortedItem struct {
+type Item[T any] struct {
 	Node    ast.Node
-	Value   any
+	Value   T
 	Comment string
 }
 
 // SortList is a function to sort list.
 // This is compatible with slices.SortStableFunc.
 // https://pkg.go.dev/slices#SortStableFunc
-type SortList func(a, b *SortedItem) int
+type SortList[T any] func(a, b *Item[T]) int
 
 // Run sorts lists.
-func (a *SortListAction) Run(node ast.Node) error {
+func (a *SortListAction[T]) Run(node ast.Node) error {
 	if a.Sort == nil {
 		return errors.New("sort is not set")
 	}
@@ -59,26 +58,26 @@ func (a *SortListAction) Run(node ast.Node) error {
 	return nil
 }
 
-func (a *SortListAction) sort(elem ast.Node) error {
+func (a *SortListAction[T]) sort(elem ast.Node) error {
 	seq, ok := elem.(*ast.SequenceNode)
 	if !ok {
 		return fmt.Errorf("expected a sequence node: %s", elem.Type().String())
 	}
-	list := make([]*SortedItem, len(seq.Values))
-	for i, node := range seq.Values {
-		var value any
-		if err := yaml.NodeToValue(node, &value); err != nil {
-			return err
-		}
-		list[i] = &SortedItem{
-			Node:    node,
-			Value:   value,
-			Comment: getComment(node),
+
+	var values []T
+	if err := yaml.NodeToValue(seq, &values); err != nil {
+		return err
+	}
+	valueWithNodes := make([]*Item[T], len(values))
+	for i, value := range values {
+		valueWithNodes[i] = &Item[T]{
+			Node:  seq.Values[i],
+			Value: value,
 		}
 	}
+	slices.SortStableFunc(valueWithNodes, a.Sort)
 
-	slices.SortStableFunc(list, a.Sort)
-	for i, item := range list {
+	for i, item := range valueWithNodes {
 		seq.Values[i] = item.Node
 	}
 	return nil
