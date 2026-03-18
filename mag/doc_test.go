@@ -48,10 +48,8 @@ children:
 		&mag.ListActions{
 			YAMLPath: "$.children",
 			Actions: []mag.ListAction{
-				&mag.RemoveListItemAction{
-					// Remove child whose index is 1
-					Remove: mag.RemoveListItemsByIndex(1),
-				},
+				// Remove child whose index is 1
+				mag.RemoveListItemsByIndex(1),
 				mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
 				&mag.SortListAction[Child]{
 					// Sort children by name
