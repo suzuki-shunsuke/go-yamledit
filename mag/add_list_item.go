@@ -6,16 +6,30 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// AddListItemAction represents an action to add a list item to a YAML sequence node.
-type AddListItemAction struct {
-	Add AddListItem
+// AddListItemFunc is a function that returns the value and index to insert into a list.
+// If error is ErrNoop, no item will be added.
+type AddListItemFunc func(seq *ast.SequenceNode) (any, int, error)
+
+// AddValueToList returns an AddListItem adding the given value at the given index.
+func AddValueToList(value any, idx int) ListAction {
+	s := &staticAddListItemEditor{
+		value: value,
+		idx:   idx,
+	}
+	return &addListItemAction{Add: s.Add}
 }
 
-// AddListItem is a function that returns the value and index to insert into a list.
-// If error is ErrNoop, no item will be added.
-type AddListItem func(seq *ast.SequenceNode) (any, int, error)
+func AddListItemByFunc(fn AddListItemFunc) ListAction {
+	return &addListItemAction{
+		Add: fn,
+	}
+}
 
-func (a *AddListItemAction) Run(seq *ast.SequenceNode) error {
+type addListItemAction struct {
+	Add AddListItemFunc
+}
+
+func (a *addListItemAction) Run(seq *ast.SequenceNode) error {
 	if a.Add == nil {
 		return errors.New("Add is not set")
 	}
@@ -44,13 +58,4 @@ type staticAddListItemEditor struct {
 
 func (e *staticAddListItemEditor) Add(_ *ast.SequenceNode) (any, int, error) {
 	return e.value, e.idx, nil
-}
-
-// AddValueToList returns an AddListItem adding the given value at the given index.
-func AddValueToList(value any, idx int) ListAction {
-	s := &staticAddListItemEditor{
-		value: value,
-		idx:   idx,
-	}
-	return &AddListItemAction{Add: s.Add}
 }
