@@ -9,7 +9,6 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-//nolint:forcetypeassert
 func Example() {
 	yml := `
 name: jack # comment is kept
