@@ -11,16 +11,19 @@ import (
 
 // RemoveListItemAction represents an action to remove items from a sequence.
 type RemoveListItemAction struct {
-	// YAMLPath is a path to YAML mapping value that key or value will be removed.
+	// YAMLPath is a path to YAML sequence nodes that some items will be removed.
 	// e.g. "$.reviewer"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	// Remove choose a removed item.
+	// Remove chooses removed items.
 	Remove RemoveListItem
 }
 
-type RemoveListItem func(seq *ast.SequenceNode) (int, error)
+// RemoveListItem returns indexes of items to be removed.
+// If indexes is nil or empty, no item will be removed.
+type RemoveListItem func(seq *ast.SequenceNode) ([]int, error)
 
+// Run removes items from a node.
 func (a *RemoveListItemAction) Run(node ast.Node) error {
 	if a.YAMLPath == "" {
 		return errors.New("yaml path is not set")
@@ -53,29 +56,36 @@ func (a *RemoveListItemAction) remove(elem ast.Node) error {
 	if !ok {
 		return fmt.Errorf("expected a sequence node: %s", elem.Type().String())
 	}
-	idx, err := a.Remove(seq)
-	if errors.Is(err, ErrNoop) {
-		return nil
-	}
+	indexes, err := a.Remove(seq)
 	if err != nil {
 		return err
 	}
-	seq.Values = slices.Delete(seq.Values, idx, idx+1)
+	if len(indexes) == 0 {
+		return nil
+	}
+	values := make([]ast.Node, 0, len(seq.Values)-len(indexes))
+	for i, value := range seq.Values {
+		if slices.Contains(indexes, i) {
+			continue
+		}
+		values = append(values, value)
+	}
+	seq.Values = values
 	return nil
 }
 
-type staticRemoveListItemEditor struct {
-	idx int
+type removeListItemsByIndexEditor struct {
+	indexes []int
 }
 
-func (e *staticRemoveListItemEditor) Remove(_ *ast.SequenceNode) (int, error) {
-	return e.idx, nil
+func (e *removeListItemsByIndexEditor) Remove(_ *ast.SequenceNode) ([]int, error) {
+	return e.indexes, nil
 }
 
-// NewStaticRemoveListItemEditor returns a RemoveListItem removing the item at the given index.
-func NewStaticRemoveListItemEditor(idx int) RemoveListItem {
-	s := &staticRemoveListItemEditor{
-		idx: idx,
+// NewRemoveListItemsByIndexEditor returns a RemoveListItem removing the item at the given index.
+func NewRemoveListItemsByIndexEditor(idxes ...int) RemoveListItem {
+	s := &removeListItemsByIndexEditor{
+		indexes: idxes,
 	}
 	return s.Remove
 }

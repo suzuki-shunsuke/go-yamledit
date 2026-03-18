@@ -5,7 +5,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
@@ -25,7 +24,7 @@ children:
 		&mag.RemoveListItemAction{
 			// Remove the item 0
 			YAMLPath: "$.children",
-			Remove:   mag.NewStaticRemoveListItemEditor(0),
+			Remove:   mag.NewRemoveListItemsByIndexEditor(0),
 		},
 	}
 	for _, act := range actions {
@@ -57,7 +56,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(0),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
 			},
 			want: `items:
 - b
@@ -73,7 +72,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(2),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(2),
 			},
 			want: `items:
 - a
@@ -89,7 +88,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(1),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
 			},
 			want: `items:
 - a
@@ -106,7 +105,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.foo.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(1),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
 			},
 			want: `foo:
   items:
@@ -123,28 +122,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(1),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
 			},
 			want: `items:
 - a # comment1
 - c # comment3
-`,
-		},
-		{
-			name: "Remove returns ErrNoop",
-			yml: `items:
-- a
-- b
-`,
-			action: mag.RemoveListItemAction{
-				YAMLPath: "$.items",
-				Remove: func(_ *ast.SequenceNode) (int, error) {
-					return 0, mag.ErrNoop
-				},
-			},
-			want: `items:
-- a
-- b
 `,
 		},
 		{
@@ -157,7 +139,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items[*]",
-				Remove:   mag.NewStaticRemoveListItemEditor(0),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
 			},
 			want: `items:
 - - b
@@ -171,7 +153,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "invalid[",
-				Remove:   mag.NewStaticRemoveListItemEditor(0),
+				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
 			},
 			wantErr: true,
 		},
