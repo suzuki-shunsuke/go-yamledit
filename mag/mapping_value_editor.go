@@ -5,33 +5,40 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type MappingValueEditor interface {
-	Edit(mv *ast.MappingValueNode) (any, any, error)
-}
+// EditMappingValue returns a key and value to be set for the mapping value node.
+// The first return value is the key, the second is the value.
+// If NoChange is returned, key or value is not changed.
+// NoChange is used to change only one of the key or value.
+type EditMappingValue func(mv *ast.MappingValueNode) (any, any, error)
 
-func NewStaticMappingValueEditor(key, value any) MappingValueEditor {
-	return &generalMappingValueEditor{
+// EditMappingValueStatic returns a MappingValueEditor editing a mapping key and value to the given key and value.
+// Matcher must choose only one pair of key and value.
+func EditMappingValueStatic(key, value any) EditMappingValue {
+	e := &generalMappingValueEditor{
 		edit: func(_ *ast.MappingValueNode, _ *MappingValue) (any, any, error) {
 			return key, value, nil
 		},
 	}
+	return e.Edit
 }
 
+// MappingValue represents a mapping key and value.
 type MappingValue struct {
-	Key          any
-	Value        any
-	KeyComment   string
-	ValueComment string
+	Key     any
+	Value   any
+	Comment string
 }
 
 type generalMappingValueEditor struct {
 	edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)
 }
 
-func NewGeneralMappingValueEditor(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) MappingValueEditor {
-	return &generalMappingValueEditor{
+// NewEditMappingValue returns a MappingValueEditor editing a mapping key and value using the given edit function.
+func NewEditMappingValue(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) EditMappingValue {
+	e := &generalMappingValueEditor{
 		edit: edit,
 	}
+	return e.Edit
 }
 
 func (f *generalMappingValueEditor) Edit(node *ast.MappingValueNode) (any, any, error) {
@@ -44,20 +51,8 @@ func (f *generalMappingValueEditor) Edit(node *ast.MappingValueNode) (any, any, 
 		return nil, nil, err
 	}
 	return f.edit(node, &MappingValue{
-		Key:          kv,
-		Value:        value,
-		KeyComment:   getComment(node.Key),
-		ValueComment: getComment(node.Value),
+		Key:     kv,
+		Value:   value,
+		Comment: getComment(node.Value),
 	})
-}
-
-func getComment(node ast.Node) string {
-	if node == nil {
-		return ""
-	}
-	cn := node.GetComment()
-	if cn == nil {
-		return ""
-	}
-	return cn.String()
 }

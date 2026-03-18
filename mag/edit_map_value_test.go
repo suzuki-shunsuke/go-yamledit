@@ -24,28 +24,28 @@ type: yoo # keep comment 3
 		&mag.EditMapValueAction{
 			// Change the value of the "name" key to "new name"
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("name"),
-			Editor:   mag.NewStaticMappingValueEditor(mag.Noop, "new name"),
+			Match:    mag.MatchMappingValueByKey("name"),
+			Edit:     mag.EditMappingValueStatic(mag.NoChange, "new name"),
 		},
 		&mag.EditMapValueAction{
 			// If the given key does not exist, do nothing
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("password"), // unknown key
-			Editor:   mag.NewStaticMappingValueEditor(mag.Noop, "***"),
+			Match:    mag.MatchMappingValueByKey("password"), // unknown key
+			Edit:     mag.EditMappingValueStatic(mag.NoChange, "***"),
 		},
 		&mag.EditMapValueAction{
 			// Rename the "age" key to "age-2"
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("age"),
-			Editor:   mag.NewStaticMappingValueEditor("age-2", mag.Noop),
+			Match:    mag.MatchMappingValueByKey("age"),
+			Edit:     mag.EditMappingValueStatic("age-2", mag.NoChange),
 		},
 		&mag.EditMapValueAction{
 			// Change both key and value
 			// key: type => type-2
 			// value yoo => yoo-2
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("type"),
-			Editor:   mag.NewStaticMappingValueEditor("type-2", "yoo-2"),
+			Match:    mag.MatchMappingValueByKey("type"),
+			Edit:     mag.EditMappingValueStatic("type-2", "yoo-2"),
 		},
 	}
 	for _, act := range actions {
@@ -76,8 +76,8 @@ age: 10
 `,
 			action: mag.EditMapValueAction{
 				YAMLPath: "$",
-				Matcher:  mag.NewKeyMVMatcher("name"),
-				Editor:   mag.NewStaticMappingValueEditor(mag.Noop, "bar"),
+				Match:    mag.MatchMappingValueByKey("name"),
+				Edit:     mag.EditMappingValueStatic(mag.NoChange, "bar"),
 			},
 			want: `name: bar
 age: 10
@@ -89,8 +89,8 @@ age: 10
 `,
 			action: mag.EditMapValueAction{
 				YAMLPath: "$",
-				Matcher:  mag.NewKeyMVMatcher("missing"),
-				Editor:   mag.NewStaticMappingValueEditor(mag.Noop, "val"),
+				Match:    mag.MatchMappingValueByKey("missing"),
+				Edit:     mag.EditMappingValueStatic(mag.NoChange, "val"),
 			},
 			want: `name: foo
 `,
@@ -103,8 +103,8 @@ age: 10
 `,
 			action: mag.EditMapValueAction{
 				YAMLPath: "$.foo",
-				Matcher:  mag.NewKeyMVMatcher("bar"),
-				Editor:   mag.NewStaticMappingValueEditor(mag.Noop, 99),
+				Match:    mag.MatchMappingValueByKey("bar"),
+				Edit:     mag.EditMappingValueStatic(mag.NoChange, 99),
 			},
 			want: `foo:
   bar: 99
@@ -121,8 +121,8 @@ age: 10
 `,
 			action: mag.EditMapValueAction{
 				YAMLPath: "$.items",
-				Matcher:  mag.NewKeyMVMatcher("val"),
-				Editor:   mag.NewStaticMappingValueEditor(mag.Noop, 100),
+				Match:    mag.MatchMappingValueByKey("val"),
+				Edit:     mag.EditMappingValueStatic(mag.NoChange, 100),
 			},
 			want: `items:
 - name: a
@@ -137,8 +137,8 @@ age: 10
 `,
 			action: mag.EditMapValueAction{
 				YAMLPath: "invalid[",
-				Matcher:  mag.NewKeyMVMatcher("name"),
-				Editor:   mag.NewStaticMappingValueEditor(mag.Noop, "bar"),
+				Match:    mag.MatchMappingValueByKey("name"),
+				Edit:     mag.EditMappingValueStatic(mag.NoChange, "bar"),
 			},
 			wantErr: true,
 		},

@@ -22,11 +22,11 @@ age: 10 # keep comment
 	actions := []mag.Action{
 		&mag.RemoveKeyAction{
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("name"),
+			Match:    mag.MatchMappingValueByKey("name"),
 		},
 		&mag.RemoveKeyAction{
 			YAMLPath: "$",
-			Matcher:  mag.NewKeyMVMatcher("id"), // unknown key
+			Match:    mag.MatchMappingValueByKey("id"), // unknown key
 		},
 	}
 	for _, act := range actions {
@@ -55,7 +55,7 @@ age: 10
 `,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
-				Matcher:  mag.NewKeyMVMatcher("name"),
+				Match:    mag.MatchMappingValueByKey("name"),
 			},
 			want: `age: 10
 `,
@@ -66,7 +66,7 @@ age: 10
 `,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$",
-				Matcher:  mag.NewKeyMVMatcher("missing"),
+				Match:    mag.MatchMappingValueByKey("missing"),
 			},
 			want: `name: foo
 `,
@@ -79,7 +79,7 @@ age: 10
 `,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.foo",
-				Matcher:  mag.NewKeyMVMatcher("bar"),
+				Match:    mag.MatchMappingValueByKey("bar"),
 			},
 			want: `foo:
   baz: 2
@@ -95,7 +95,7 @@ age: 10
 `,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "$.items",
-				Matcher:  mag.NewKeyMVMatcher("name"),
+				Match:    mag.MatchMappingValueByKey("name"),
 			},
 			want: `items:
 - val: 1
@@ -108,7 +108,7 @@ age: 10
 `,
 			action: mag.RemoveKeyAction{
 				YAMLPath: "invalid[",
-				Matcher:  mag.NewKeyMVMatcher("name"),
+				Match:    mag.MatchMappingValueByKey("name"),
 			},
 			wantErr: true,
 		},

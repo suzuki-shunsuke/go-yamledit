@@ -10,6 +10,7 @@ type valueWithComment struct {
 	Comment string
 }
 
+// WithComment adds a comment to a value.
 func WithComment(v any, comment string) any {
 	return &valueWithComment{
 		Value: v, Comment: comment,
@@ -29,4 +30,15 @@ func toValueWithComment(v any) *valueWithComment {
 	return &valueWithComment{
 		Value: v,
 	}
+}
+
+func getComment(node ast.Node) string {
+	if node == nil {
+		return ""
+	}
+	cn := node.GetComment()
+	if cn == nil {
+		return ""
+	}
+	return cn.String()
 }

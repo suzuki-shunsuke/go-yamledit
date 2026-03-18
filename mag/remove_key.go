@@ -9,13 +9,22 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// RemoveKeyAction represents an action to remove keys from a map.
 type RemoveKeyAction struct {
+	// YAMLPath is a path to YAML mapping value that key or value will be removed.
+	// e.g. "$.reviewer"
+	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Matcher  MappingValueMatcher
+	// Match filters mapping keys and values to be removed.
+	Match MatchMappingValue
 }
 
+// Run removes keys from a map.
 func (a *RemoveKeyAction) Run(node ast.Node) error {
-	if a.Matcher == nil {
+	if a.YAMLPath == "" {
+		return errors.New("yaml path is not set")
+	}
+	if a.Match == nil {
 		return errors.New("matcher is not set")
 	}
 	path, err := yaml.PathString(a.YAMLPath)
@@ -47,7 +56,7 @@ func (a *RemoveKeyAction) removeKeyFromMap(m *ast.MappingNode) error {
 	idx := 0
 	mapIter := m.MapRange()
 	for mapIter.Next() {
-		f, err := a.Matcher.Match(mapIter.KeyValue())
+		f, err := a.Match(mapIter.KeyValue())
 		if err != nil {
 			return err
 		}

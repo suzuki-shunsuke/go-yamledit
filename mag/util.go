@@ -4,14 +4,16 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 )
 
 type noop struct{}
 
-var Noop = noop{} //nolint:gochecknoglobals
+// NoChange is a sentinel value that indicates no change should be made against mapping key or value.
+var NoChange = noop{} //nolint:gochecknoglobals
 
-func IsChanged(value any) bool {
+func isChanged(value any) bool {
 	_, ok := value.(noop)
 	return !ok
 }
@@ -56,4 +58,49 @@ func flatten(node ast.Node, depth int) ([]ast.Node, error) {
 		ret = append(ret, nodes...)
 	}
 	return ret, nil
+}
+
+func getDepthByPath(yamlPath string) int { //nolint:cyclop
+	count := 0
+	inQuote := false
+	for i := 0; i < len(yamlPath); i++ {
+		ch := yamlPath[i]
+		if ch == '\\' && inQuote && i+1 < len(yamlPath) && yamlPath[i+1] == '\'' {
+			i++ // skip escaped quote
+			continue
+		}
+		if ch == '\'' {
+			inQuote = !inQuote
+			continue
+		}
+		if inQuote {
+			continue
+		}
+		if i+3 <= len(yamlPath) && yamlPath[i:i+3] == "[*]" {
+			count++
+			i += 2 // skip rest of [*]
+			continue
+		}
+		if ch == '.' && i+1 < len(yamlPath) && yamlPath[i+1] == '.' {
+			count++
+			i++ // skip second dot
+			continue
+		}
+	}
+	return count
+}
+
+func valueToNode(value any) (ast.Node, error) {
+	valWithComment := toValueWithComment(value)
+	v, err := yaml.ValueToNode(valWithComment.Value)
+	if err != nil {
+		return nil, err
+	}
+	if valWithComment.Comment == "" {
+		return v, nil
+	}
+	if err := v.SetComment(commentGroupFromString(valWithComment.Comment)); err != nil {
+		return nil, err
+	}
+	return v, nil
 }
