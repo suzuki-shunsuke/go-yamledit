@@ -24,10 +24,7 @@ children:
 	act := &mag.ListActions{
 		YAMLPath: "$.children",
 		Actions: []mag.ListAction{
-			&mag.AddListItemAction{
-				// Add "zoo" to the first position
-				Add: mag.AddStaticValueToList("zoo", 0),
-			},
+			mag.AddStaticValueToList("zoo", 0),
 		},
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
@@ -54,10 +51,8 @@ func ExampleAddListItemAction_Run_negative_index() {
 	act := &mag.ListActions{
 		YAMLPath: "$",
 		Actions: []mag.ListAction{
-			&mag.AddListItemAction{
-				// Add "zoo" to the last position
-				Add: mag.AddStaticValueToList("zoo", -1),
-			},
+			// Add "zoo" to the last position
+			mag.AddStaticValueToList("zoo", -1),
 		},
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
@@ -88,9 +83,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("first", 0),
-					},
+					mag.AddStaticValueToList("first", 0),
 				},
 			},
 			want: `items:
@@ -108,9 +101,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("last", 2),
-					},
+					mag.AddStaticValueToList("last", 2),
 				},
 			},
 			want: `items:
@@ -129,9 +120,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("mid", 1),
-					},
+					mag.AddStaticValueToList("mid", 1),
 				},
 			},
 			want: `items:
@@ -151,9 +140,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.foo.items",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("z", 0),
-					},
+					mag.AddStaticValueToList("z", 0),
 				},
 			},
 			want: `foo:
@@ -172,9 +159,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("new", 1),
-					},
+					mag.AddStaticValueToList("new", 1),
 				},
 			},
 			want: `items:
@@ -212,9 +197,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "invalid[",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("x", 0),
-					},
+					mag.AddStaticValueToList("x", 0),
 				},
 			},
 			wantErr: true,
@@ -243,9 +226,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items[*]",
 				Actions: []mag.ListAction{
-					&mag.AddListItemAction{
-						Add: mag.AddStaticValueToList("new", 0),
-					},
+					mag.AddStaticValueToList("new", 0),
 				},
 			},
 			want: `items:

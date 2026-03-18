@@ -52,10 +52,7 @@ children:
 					// Remove child whose index is 1
 					Remove: mag.RemoveListItemsByIndex(1),
 				},
-				&mag.AddListItemAction{
-					// Add child.
-					Add: mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
-				},
+				mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
 				&mag.SortListAction[Child]{
 					// Sort children by name
 					Sort: func(a, b *mag.Node[Child]) int {
