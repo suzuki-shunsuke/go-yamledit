@@ -10,7 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleSortListAction_Run() {
+func ExampleSortList() {
 	yml := `
 - foo # comment
 - bar # comment 2
@@ -20,16 +20,13 @@ func ExampleSortListAction_Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := &mag.ListActions{
-		YAMLPath: "$",
-		Actions: []mag.ListAction{
-			&mag.SortListAction[string]{
-				Sort: func(a, b *mag.Node[string]) int {
-					return strings.Compare(a.Value, b.Value)
-				},
-			},
-		},
-	}
+
+	act := mag.List(
+		"$",
+		mag.SortList[string](func(a, b *mag.Node[string]) int {
+			return strings.Compare(a.Value, b.Value)
+		}),
+	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -39,12 +36,12 @@ func ExampleSortListAction_Run() {
 	// - foo # comment
 }
 
-func TestSortListAction_Run(t *testing.T) {
+func TestSortList(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.ListActions
+		action  mag.Action
 		want    string
 		wantErr bool
 	}{
@@ -54,16 +51,9 @@ func TestSortListAction_Run(t *testing.T) {
 - apple
 - banana
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `- apple
 - banana
 - cherry
@@ -75,16 +65,9 @@ func TestSortListAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `- a
 - b
 - c
@@ -96,16 +79,9 @@ func TestSortListAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(b.Value, a.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(b.Value, a.Value)
+			})),
 			want: `- c
 - b
 - a
@@ -117,16 +93,9 @@ func TestSortListAction_Run(t *testing.T) {
 - apple # first
 - banana # second
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `- apple # first
 - banana # second
 - cherry # third
@@ -140,16 +109,9 @@ func TestSortListAction_Run(t *testing.T) {
   - a
   - b
 `,
-			action: mag.ListActions{
-				YAMLPath: "$.foo.items",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$.foo.items", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `foo:
   items:
   - a
@@ -167,16 +129,9 @@ func TestSortListAction_Run(t *testing.T) {
   - x
   - y
 `,
-			action: mag.ListActions{
-				YAMLPath: "$.items[*]",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$.items[*]", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `items:
 - - a
   - b
@@ -190,16 +145,9 @@ func TestSortListAction_Run(t *testing.T) {
 			name: "single element",
 			yml: `- only
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(a, b *mag.Node[string]) int {
-							return strings.Compare(a.Value, b.Value)
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			want: `- only
 `,
 		},
@@ -207,28 +155,9 @@ func TestSortListAction_Run(t *testing.T) {
 			name: "invalid yaml path",
 			yml: `- a
 `,
-			action: mag.ListActions{
-				YAMLPath: "invalid[",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{
-						Sort: func(_, _ *mag.Node[string]) int {
-							return 0
-						},
-					},
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "Sort is nil",
-			yml: `- a
-`,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[string]{},
-				},
-			},
+			action: mag.List("invalid[", mag.SortList[string](func(a, b *mag.Node[string]) int {
+				return strings.Compare(a.Value, b.Value)
+			})),
 			wantErr: true,
 		},
 	}
@@ -262,7 +191,7 @@ func TestSortListAction_Run_uint64(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.ListActions
+		action  mag.Action
 		want    string
 		wantErr bool
 	}{
@@ -272,24 +201,17 @@ func TestSortListAction_Run_uint64(t *testing.T) {
 - 1
 - 2
 `,
-			action: mag.ListActions{
-				YAMLPath: "$",
-				Actions: []mag.ListAction{
-					&mag.SortListAction[uint64]{
-						Sort: func(a, b *mag.Node[uint64]) int {
-							aInt := a.Value
-							bInt := b.Value
-							if aInt < bInt {
-								return -1
-							}
-							if aInt > bInt {
-								return 1
-							}
-							return 0
-						},
-					},
-				},
-			},
+			action: mag.List("$", mag.SortList[uint64](func(a, b *mag.Node[uint64]) int {
+				aInt := a.Value
+				bInt := b.Value
+				if aInt < bInt {
+					return -1
+				}
+				if aInt > bInt {
+					return 1
+				}
+				return 0
+			})),
 			want: `- 1
 - 2
 - 3
