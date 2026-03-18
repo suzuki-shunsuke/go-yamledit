@@ -19,21 +19,15 @@ name: foo # keep comment
 	if err != nil {
 		log.Fatal(err)
 	}
-	actions := []mag.Action{
-		&mag.AddMapKeyAction{
+	act := &mag.MapActions{
+		YAMLPath: "$",
+		Actions: []mag.MapAction{
 			// Add the key "age" with the value 10
-			YAMLPath: "$",
-			Add:      mag.AddStaticValueToMappingValue("age", 10, 0),
+			mag.AddToMap("age", 10, 0),
 		},
-		// If key exist
-		// 1. do nothing
-		// 2. error
-		// 3. overwrite
 	}
-	for _, act := range actions {
-		if err := act.Run(file.Docs[0].Body); err != nil {
-			log.Fatal(err)
-		}
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
@@ -46,7 +40,7 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.AddMapKeyAction
+		action  mag.MapActions
 		want    string
 		wantErr bool
 	}{
@@ -55,9 +49,11 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add:      mag.AddStaticValueToMappingValue("first", true, 0),
+				Actions: []mag.MapAction{
+					mag.AddToMap("first", true, 0),
+				},
 			},
 			want: `first: true
 name: foo
@@ -69,9 +65,11 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add:      mag.AddStaticValueToMappingValue("last", "val", 2),
+				Actions: []mag.MapAction{
+					mag.AddToMap("last", "val", 2),
+				},
 			},
 			want: `name: foo
 age: 10
@@ -84,9 +82,11 @@ last: val
 b: 2
 c: 3
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add:      mag.AddStaticValueToMappingValue("mid", "x", 1),
+				Actions: []mag.MapAction{
+					mag.AddToMap("mid", "x", 1),
+				},
 			},
 			want: `a: 1
 mid: x
@@ -100,9 +100,11 @@ c: 3
 b: 2
 c: 3
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add:      mag.AddStaticValueToMappingValue("neg", "x", -1),
+				Actions: []mag.MapAction{
+					mag.AddToMap("neg", "x", -1),
+				},
 			},
 			want: `a: 1
 b: 2
@@ -116,9 +118,11 @@ c: 3
   bar: 1
   baz: 2
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$.foo",
-				Add:      mag.AddStaticValueToMappingValue("qux", 99, 0),
+				Actions: []mag.MapAction{
+					mag.AddToMap("qux", 99, 0),
+				},
 			},
 			want: `foo:
 qux: 99
@@ -130,9 +134,11 @@ qux: 99
 			name: "with comment on value",
 			yml: `name: foo
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add:      mag.AddStaticValueToMappingValue("color", mag.WithComment("red", "a nice color"), 0),
+				Actions: []mag.MapAction{
+					mag.AddToMap("color", mag.WithComment("red", "a nice color"), 0),
+				},
 			},
 			want: `color: red #a nice color
 name: foo
@@ -146,9 +152,11 @@ name: foo
 - name: b
   val: 2
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$.items",
-				Add:      mag.AddStaticValueToMappingValue("new", true, 0),
+				Actions: []mag.MapAction{
+					mag.AddToMap("new", true, 0),
+				},
 			},
 			want: `items:
 - new: true
@@ -164,10 +172,14 @@ name: foo
 			yml: `name: foo
 age: 10
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Add: func(_ *ast.MappingNode) (any, any, int, error) {
-					return nil, nil, 0, mag.ErrNoop
+				Actions: []mag.MapAction{
+					&mag.AddMapKeyAction{
+						Add: func(_ *ast.MappingNode) (any, any, int, error) {
+							return nil, nil, 0, mag.ErrNoop
+						},
+					},
 				},
 			},
 			want: `name: foo
@@ -178,9 +190,11 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "invalid[",
-				Add:      mag.AddStaticValueToMappingValue("x", "y", 0),
+				Actions: []mag.MapAction{
+					mag.AddToMap("x", "y", 0),
+				},
 			},
 			wantErr: true,
 		},
@@ -188,8 +202,11 @@ age: 10
 			name: "Add is nil",
 			yml: `name: foo
 `,
-			action: mag.AddMapKeyAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
+				Actions: []mag.MapAction{
+					&mag.AddMapKeyAction{},
+				},
 			},
 			wantErr: true,
 		},

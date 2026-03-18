@@ -20,38 +20,35 @@ type: yoo # keep comment 3
 	if err != nil {
 		log.Fatal(err)
 	}
-	actions := []mag.Action{
-		&mag.EditMapValueAction{
-			// Change the value of the "name" key to "new name"
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("name"),
-			Edit:     mag.EditMappingValueStatic(mag.NoChange, "new name"),
-		},
-		&mag.EditMapValueAction{
-			// If the given key does not exist, do nothing
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("password"), // unknown key
-			Edit:     mag.EditMappingValueStatic(mag.NoChange, "***"),
-		},
-		&mag.EditMapValueAction{
-			// Rename the "age" key to "age-2"
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("age"),
-			Edit:     mag.EditMappingValueStatic("age-2", mag.NoChange),
-		},
-		&mag.EditMapValueAction{
-			// Change both key and value
-			// key: type => type-2
-			// value yoo => yoo-2
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("type"),
-			Edit:     mag.EditMappingValueStatic("type-2", "yoo-2"),
+	act := &mag.MapActions{
+		YAMLPath: "$",
+		Actions: []mag.MapAction{
+			&mag.EditMapValueAction{
+				// Change the value of the "name" key to "new name"
+				Match: mag.MatchMappingValueByKey("name"),
+				Edit:  mag.EditMappingValueStatic(mag.NoChange, "new name"),
+			},
+			&mag.EditMapValueAction{
+				// If the given key does not exist, do nothing
+				Match: mag.MatchMappingValueByKey("password"), // unknown key
+				Edit:  mag.EditMappingValueStatic(mag.NoChange, "***"),
+			},
+			&mag.EditMapValueAction{
+				// Rename the "age" key to "age-2"
+				Match: mag.MatchMappingValueByKey("age"),
+				Edit:  mag.EditMappingValueStatic("age-2", mag.NoChange),
+			},
+			&mag.EditMapValueAction{
+				// Change both key and value
+				// key: type => type-2
+				// value yoo => yoo-2
+				Match: mag.MatchMappingValueByKey("type"),
+				Edit:  mag.EditMappingValueStatic("type-2", "yoo-2"),
+			},
 		},
 	}
-	for _, act := range actions {
-		if err := act.Run(file.Docs[0].Body); err != nil {
-			log.Fatal(err)
-		}
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
@@ -65,7 +62,7 @@ func TestEditMapValueAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.EditMapValueAction
+		action  mag.MapActions
 		want    string
 		wantErr bool
 	}{
@@ -74,10 +71,14 @@ func TestEditMapValueAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.EditMapValueAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Match:    mag.MatchMappingValueByKey("name"),
-				Edit:     mag.EditMappingValueStatic(mag.NoChange, "bar"),
+				Actions: []mag.MapAction{
+					&mag.EditMapValueAction{
+						Match: mag.MatchMappingValueByKey("name"),
+						Edit:  mag.EditMappingValueStatic(mag.NoChange, "bar"),
+					},
+				},
 			},
 			want: `name: bar
 age: 10
@@ -87,10 +88,14 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.EditMapValueAction{
+			action: mag.MapActions{
 				YAMLPath: "$",
-				Match:    mag.MatchMappingValueByKey("missing"),
-				Edit:     mag.EditMappingValueStatic(mag.NoChange, "val"),
+				Actions: []mag.MapAction{
+					&mag.EditMapValueAction{
+						Match: mag.MatchMappingValueByKey("missing"),
+						Edit:  mag.EditMappingValueStatic(mag.NoChange, "val"),
+					},
+				},
 			},
 			want: `name: foo
 `,
@@ -101,10 +106,14 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.EditMapValueAction{
+			action: mag.MapActions{
 				YAMLPath: "$.foo",
-				Match:    mag.MatchMappingValueByKey("bar"),
-				Edit:     mag.EditMappingValueStatic(mag.NoChange, 99),
+				Actions: []mag.MapAction{
+					&mag.EditMapValueAction{
+						Match: mag.MatchMappingValueByKey("bar"),
+						Edit:  mag.EditMappingValueStatic(mag.NoChange, 99),
+					},
+				},
 			},
 			want: `foo:
   bar: 99
@@ -119,10 +128,14 @@ age: 10
 - name: b
   val: 2
 `,
-			action: mag.EditMapValueAction{
+			action: mag.MapActions{
 				YAMLPath: "$.items",
-				Match:    mag.MatchMappingValueByKey("val"),
-				Edit:     mag.EditMappingValueStatic(mag.NoChange, 100),
+				Actions: []mag.MapAction{
+					&mag.EditMapValueAction{
+						Match: mag.MatchMappingValueByKey("val"),
+						Edit:  mag.EditMappingValueStatic(mag.NoChange, 100),
+					},
+				},
 			},
 			want: `items:
 - name: a
@@ -135,10 +148,14 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action: mag.EditMapValueAction{
+			action: mag.MapActions{
 				YAMLPath: "invalid[",
-				Match:    mag.MatchMappingValueByKey("name"),
-				Edit:     mag.EditMappingValueStatic(mag.NoChange, "bar"),
+				Actions: []mag.MapAction{
+					&mag.EditMapValueAction{
+						Match: mag.MatchMappingValueByKey("name"),
+						Edit:  mag.EditMappingValueStatic(mag.NoChange, "bar"),
+					},
+				},
 			},
 			wantErr: true,
 		},

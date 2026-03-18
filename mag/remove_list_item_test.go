@@ -20,17 +20,15 @@ children:
 	if err != nil {
 		log.Fatal(err)
 	}
-	actions := []mag.Action{
-		&mag.RemoveListItemAction{
+	act := &mag.ListActions{
+		YAMLPath: "$.children",
+		Actions: []mag.ListAction{
 			// Remove the item 0
-			YAMLPath: "$.children",
-			Remove:   mag.RemoveListItemsByIndex(0),
+			mag.RemoveListItemsByIndex(0),
 		},
 	}
-	for _, act := range actions {
-		if err := act.Run(file.Docs[0].Body); err != nil {
-			log.Fatal(err)
-		}
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
@@ -43,7 +41,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.RemoveListItemAction
+		action  mag.ListActions
 		want    string
 		wantErr bool
 	}{
@@ -54,9 +52,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items",
-				Remove:   mag.RemoveListItemsByIndex(0),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(0),
+				},
 			},
 			want: `items:
 - b
@@ -70,9 +70,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items",
-				Remove:   mag.RemoveListItemsByIndex(2),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(2),
+				},
 			},
 			want: `items:
 - a
@@ -86,9 +88,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items",
-				Remove:   mag.RemoveListItemsByIndex(1),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(1),
+				},
 			},
 			want: `items:
 - a
@@ -103,9 +107,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
   - y
   - z
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.foo.items",
-				Remove:   mag.RemoveListItemsByIndex(1),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(1),
+				},
 			},
 			want: `foo:
   items:
@@ -120,9 +126,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 - b # comment2
 - c # comment3
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items",
-				Remove:   mag.RemoveListItemsByIndex(1),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(1),
+				},
 			},
 			want: `items:
 - a # comment1
@@ -137,9 +145,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 - - c
   - d
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items[*]",
-				Remove:   mag.RemoveListItemsByIndex(0),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(0),
+				},
 			},
 			want: `items:
 - - b
@@ -151,9 +161,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 			yml: `items:
 - a
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "invalid[",
-				Remove:   mag.RemoveListItemsByIndex(0),
+				Actions: []mag.ListAction{
+					mag.RemoveListItemsByIndex(0),
+				},
 			},
 			wantErr: true,
 		},
@@ -162,8 +174,11 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 			yml: `items:
 - a
 `,
-			action: mag.RemoveListItemAction{
+			action: mag.ListActions{
 				YAMLPath: "$.items",
+				Actions: []mag.ListAction{
+					&mag.RemoveListItemAction{},
+				},
 			},
 			wantErr: true,
 		},

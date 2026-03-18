@@ -27,39 +27,29 @@ children:
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		&mag.EditMapValueAction{
+		mag.Map(
+			"$",
 			// Edit name to "ryan"
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("name"),
-			Edit:     mag.EditMappingValueStatic(mag.NoChange, "ryan"),
-		},
-		&mag.RemoveKeyAction{
-			// Remove the key "age"
-			YAMLPath: "$",
-			Match:    mag.MatchMappingValueByKey("age"),
-		},
-		&mag.AddMapKeyAction{
-			// Add the key "gender"
-			YAMLPath: "$",
-			Add:      mag.AddStaticValueToMappingValue("gender", "male", 1),
-		},
-		&mag.RemoveListItemAction{
-			// Remove child whose index is 1
-			YAMLPath: "$.children",
-			Remove:   mag.RemoveListItemsByIndex(1),
-		},
-		&mag.AddListItemAction{
-			// Add child.
-			YAMLPath: "$.children",
-			Add:      mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
-		},
-		&mag.SortListAction[Child]{
-			// Sort children by name
-			YAMLPath: "$.children",
-			Sort: func(a, b *mag.Item[Child]) int {
-				return strings.Compare(a.Value.Name, b.Value.Name)
+			&mag.EditMapValueAction{
+				Match: mag.MatchMappingValueByKey("name"),
+				Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
 			},
-		},
+			// Remove the key "age"
+			mag.RemoveKeys("age"),
+			// Add the key "gender"
+			mag.AddToMap("gender", "male", 1),
+		),
+		mag.List(
+			"$.children",
+			// Remove child whose index is 1
+			mag.RemoveListItemsByIndex(1),
+			// Add a child at index 0
+			mag.AddValueToList(map[string]any{"name": "jessica"}, 0),
+			// Sort children by name
+			mag.SortList[Child](func(a, b *mag.Node[Child]) int {
+				return strings.Compare(a.Value.Name, b.Value.Name)
+			}),
+		),
 	}
 	for _, act := range actions {
 		if err := act.Run(file.Docs[0].Body); err != nil {
