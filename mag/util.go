@@ -60,7 +60,7 @@ func flatten(node ast.Node, depth int) ([]ast.Node, error) {
 	return ret, nil
 }
 
-func getDepthByPath(yamlPath string) int {
+func getDepthByPath(yamlPath string) int { //nolint:cyclop
 	count := 0
 	inQuote := false
 	for i := 0; i < len(yamlPath); i++ {
