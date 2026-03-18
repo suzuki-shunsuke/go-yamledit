@@ -55,6 +55,75 @@ func Test_unifyInt(t *testing.T) {
 	}
 }
 
+func Test_getDepthByPath(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name  string
+		input string
+		want  int
+	}{
+		{
+			name:  "root only",
+			input: "$",
+			want:  0,
+		},
+		{
+			name:  "simple child",
+			input: "$.items",
+			want:  0,
+		},
+		{
+			name:  "one wildcard",
+			input: "$.items[*]",
+			want:  1,
+		},
+		{
+			name:  "two wildcards",
+			input: "$.items[*][*]",
+			want:  2,
+		},
+		{
+			name:  "recursive descent",
+			input: "$..items",
+			want:  1,
+		},
+		{
+			name:  "recursive descent and wildcard",
+			input: "$..items[*]",
+			want:  2,
+		},
+		{
+			name:  "wildcard inside quotes ignored",
+			input: "$.foo.'bar[*]'.items",
+			want:  0,
+		},
+		{
+			name:  "double dot inside quotes ignored",
+			input: "$.foo.'bar..baz'.items",
+			want:  0,
+		},
+		{
+			name:  "quoted ignored unquoted counted",
+			input: "$.foo.'bar[*]'.items[*]",
+			want:  1,
+		},
+		{
+			name:  "escaped quote inside quoted segment",
+			input: "$.foo.'it\\'s[*]'.items",
+			want:  0,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := getDepthByPath(tt.input)
+			if got != tt.want {
+				t.Errorf("getDepthByPath(%q) = %d, want %d", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_compareKey(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
