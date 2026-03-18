@@ -5,23 +5,21 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// MappingValueEditor edits mapping keys and values.
-type MappingValueEditor interface {
-	// Edit returns a key and value to be set for the mapping value node.
-	// The first return value is the key, the second is the value.
-	// If NoChange is returned, key or value is not changed.
-	// NoChange is used to change only one of the key or value.
-	Edit(mv *ast.MappingValueNode) (any, any, error)
-}
+// EditMappingValue returns a key and value to be set for the mapping value node.
+// The first return value is the key, the second is the value.
+// If NoChange is returned, key or value is not changed.
+// NoChange is used to change only one of the key or value.
+type EditMappingValue func(mv *ast.MappingValueNode) (any, any, error)
 
-// NewStaticMappingValueEditor returns a MappingValueEditor editing a mapping key and value to the given key and value.
+// EditMappingValueStatic returns a MappingValueEditor editing a mapping key and value to the given key and value.
 // Matcher must choose only one pair of key and value.
-func NewStaticMappingValueEditor(key, value any) MappingValueEditor {
-	return &generalMappingValueEditor{
+func EditMappingValueStatic(key, value any) EditMappingValue {
+	e := &generalMappingValueEditor{
 		edit: func(_ *ast.MappingValueNode, _ *MappingValue) (any, any, error) {
 			return key, value, nil
 		},
 	}
+	return e.Edit
 }
 
 // MappingValue represents a mapping key and value.
@@ -35,11 +33,12 @@ type generalMappingValueEditor struct {
 	edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)
 }
 
-// NewGeneralMappingValueEditor returns a MappingValueEditor editing a mapping key and value using the given edit function.
-func NewGeneralMappingValueEditor(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) MappingValueEditor {
-	return &generalMappingValueEditor{
+// NewEditMappingValue returns a MappingValueEditor editing a mapping key and value using the given edit function.
+func NewEditMappingValue(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) EditMappingValue {
+	e := &generalMappingValueEditor{
 		edit: edit,
 	}
+	return e.Edit
 }
 
 func (f *generalMappingValueEditor) Edit(node *ast.MappingValueNode) (any, any, error) {

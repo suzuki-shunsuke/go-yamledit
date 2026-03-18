@@ -5,19 +5,18 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type MappingValueMatcher interface {
-	Match(kv *ast.MappingValueNode) (bool, error)
-}
+type MatchMappingValue func(kv *ast.MappingValueNode) (bool, error)
 
-type KeyMVMatcher struct {
+type keyMVMatcher struct {
 	key string
 }
 
-func NewKeyMVMatcher(key string) *KeyMVMatcher {
-	return &KeyMVMatcher{key: key}
+func MatchMappingValueByKey(key string) MatchMappingValue {
+	m := &keyMVMatcher{key: key}
+	return m.Match
 }
 
-func (m *KeyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
+func (m *keyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
 	var keyV any
 	if err := yaml.NodeToValue(kv.Key, &keyV); err != nil {
 		return false, err
@@ -25,8 +24,13 @@ func (m *KeyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
 	return compareKey(m.key, keyV), nil
 }
 
-type AllMVMatcher struct{}
+func MatchAllMappingValues() MatchMappingValue {
+	m := &allMVMatcher{}
+	return m.Match
+}
 
-func (m *AllMVMatcher) Match(_ *ast.MappingValueNode) (bool, error) {
+type allMVMatcher struct{}
+
+func (m *allMVMatcher) Match(_ *ast.MappingValueNode) (bool, error) {
 	return true, nil
 }

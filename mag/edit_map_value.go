@@ -14,10 +14,10 @@ type EditMapValueAction struct {
 	// e.g. "$.reviewer"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	// Matcher filters mapping keys and values to be edited.
-	Matcher MappingValueMatcher
-	// Editor edits keys and values.
-	Editor MappingValueEditor
+	// Match filters mapping keys and values to be edited.
+	Match MatchMappingValue
+	// Edit edits keys and values.
+	Edit EditMappingValue
 }
 
 // Run edits mapping keys and values.
@@ -25,10 +25,10 @@ func (a *EditMapValueAction) Run(node ast.Node) error {
 	if a.YAMLPath == "" {
 		return errors.New("yaml path is not set")
 	}
-	if a.Matcher == nil {
+	if a.Match == nil {
 		return errors.New("matcher is not set")
 	}
-	if a.Editor == nil {
+	if a.Edit == nil {
 		return errors.New("editor is not set")
 	}
 	path, err := yaml.PathString(a.YAMLPath)
@@ -61,7 +61,7 @@ func (a *EditMapValueAction) editMapValue(m *ast.MappingNode) error {
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
 
-		f, err := a.Matcher.Match(keyValue)
+		f, err := a.Match(keyValue)
 		if err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func (a *EditMapValueAction) editMapValue(m *ast.MappingNode) error {
 			continue
 		}
 
-		newKey, newValue, err := a.Editor.Edit(keyValue)
+		newKey, newValue, err := a.Edit(keyValue)
 		if err != nil {
 			return err
 		}
