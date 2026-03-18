@@ -20,7 +20,7 @@ func ExampleWithComment() {
 	act := &mag.AddListItemAction{
 		// Add "zoo" with comment
 		YAMLPath: "$",
-		Add:      mag.NewStaticAddListItemEditor(mag.WithComment("zoo", " comment is added"), 1),
+		Add:      mag.AddStaticValueToList(mag.WithComment("zoo", " comment is added"), 1),
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)

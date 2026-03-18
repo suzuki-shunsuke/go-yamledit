@@ -107,8 +107,8 @@ func (e *staticAddMapKeyEditor) Add(_ *ast.MappingNode) (any, any, int, error) {
 	return e.key, e.value, e.idx, nil
 }
 
-// NewStaticAddMapKeyEditor returns an AddMapKey function adding the given key and value, to the given index.
-func NewStaticAddMapKeyEditor(key, value any, idx int) AddMapKey {
+// AddStaticValueToMappingValue returns an AddMapKey function adding the given key and value, to the given index.
+func AddStaticValueToMappingValue(key, value any, idx int) AddMapKey {
 	s := &staticAddMapKeyEditor{
 		key:   key,
 		value: value,

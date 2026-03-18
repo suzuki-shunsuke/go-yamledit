@@ -25,7 +25,7 @@ children:
 		&mag.AddListItemAction{
 			// Add "zoo" to the first position
 			YAMLPath: "$.children",
-			Add:      mag.NewStaticAddListItemEditor("zoo", 0),
+			Add:      mag.AddStaticValueToList("zoo", 0),
 		},
 	}
 	for _, act := range actions {
@@ -54,7 +54,7 @@ func ExampleAddListItemAction_Run_negative_index() {
 	act := &mag.AddListItemAction{
 		// Add "zoo" to the last position
 		YAMLPath: "$",
-		Add:      mag.NewStaticAddListItemEditor("zoo", -1),
+		Add:      mag.AddStaticValueToList("zoo", -1),
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
@@ -83,7 +83,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddListItemEditor("first", 0),
+				Add:      mag.AddStaticValueToList("first", 0),
 			},
 			want: `items:
 - first
@@ -99,7 +99,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddListItemEditor("last", 2),
+				Add:      mag.AddStaticValueToList("last", 2),
 			},
 			want: `items:
 - a
@@ -116,7 +116,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddListItemEditor("mid", 1),
+				Add:      mag.AddStaticValueToList("mid", 1),
 			},
 			want: `items:
 - a
@@ -134,7 +134,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.foo.items",
-				Add:      mag.NewStaticAddListItemEditor("z", 0),
+				Add:      mag.AddStaticValueToList("z", 0),
 			},
 			want: `foo:
   items:
@@ -151,7 +151,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddListItemEditor("new", 1),
+				Add:      mag.AddStaticValueToList("new", 1),
 			},
 			want: `items:
 - a # comment1
@@ -183,7 +183,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "invalid[",
-				Add:      mag.NewStaticAddListItemEditor("x", 0),
+				Add:      mag.AddStaticValueToList("x", 0),
 			},
 			wantErr: true,
 		},
@@ -207,7 +207,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items[*]",
-				Add:      mag.NewStaticAddListItemEditor("new", 0),
+				Add:      mag.AddStaticValueToList("new", 0),
 			},
 			want: `items:
 - - new

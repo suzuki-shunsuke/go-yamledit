@@ -23,7 +23,7 @@ name: foo # keep comment
 		&mag.AddMapKeyAction{
 			// Add the key "age" with the value 10
 			YAMLPath: "$",
-			Add:      mag.NewStaticAddMapKeyEditor("age", 10, 0),
+			Add:      mag.AddStaticValueToMappingValue("age", 10, 0),
 		},
 		// If key exist
 		// 1. do nothing
@@ -57,7 +57,7 @@ age: 10
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
-				Add:      mag.NewStaticAddMapKeyEditor("first", true, 0),
+				Add:      mag.AddStaticValueToMappingValue("first", true, 0),
 			},
 			want: `first: true
 name: foo
@@ -71,7 +71,7 @@ age: 10
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
-				Add:      mag.NewStaticAddMapKeyEditor("last", "val", 2),
+				Add:      mag.AddStaticValueToMappingValue("last", "val", 2),
 			},
 			want: `name: foo
 age: 10
@@ -86,7 +86,7 @@ c: 3
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
-				Add:      mag.NewStaticAddMapKeyEditor("mid", "x", 1),
+				Add:      mag.AddStaticValueToMappingValue("mid", "x", 1),
 			},
 			want: `a: 1
 mid: x
@@ -102,7 +102,7 @@ c: 3
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
-				Add:      mag.NewStaticAddMapKeyEditor("neg", "x", -1),
+				Add:      mag.AddStaticValueToMappingValue("neg", "x", -1),
 			},
 			want: `a: 1
 b: 2
@@ -118,7 +118,7 @@ c: 3
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$.foo",
-				Add:      mag.NewStaticAddMapKeyEditor("qux", 99, 0),
+				Add:      mag.AddStaticValueToMappingValue("qux", 99, 0),
 			},
 			want: `foo:
 qux: 99
@@ -132,7 +132,7 @@ qux: 99
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$",
-				Add:      mag.NewStaticAddMapKeyEditor("color", mag.WithComment("red", "a nice color"), 0),
+				Add:      mag.AddStaticValueToMappingValue("color", mag.WithComment("red", "a nice color"), 0),
 			},
 			want: `color: red #a nice color
 name: foo
@@ -148,7 +148,7 @@ name: foo
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddMapKeyEditor("new", true, 0),
+				Add:      mag.AddStaticValueToMappingValue("new", true, 0),
 			},
 			want: `items:
 - new: true
@@ -180,7 +180,7 @@ age: 10
 `,
 			action: mag.AddMapKeyAction{
 				YAMLPath: "invalid[",
-				Add:      mag.NewStaticAddMapKeyEditor("x", "y", 0),
+				Add:      mag.AddStaticValueToMappingValue("x", "y", 0),
 			},
 			wantErr: true,
 		},

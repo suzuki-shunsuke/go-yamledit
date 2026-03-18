@@ -24,7 +24,7 @@ children:
 		&mag.RemoveListItemAction{
 			// Remove the item 0
 			YAMLPath: "$.children",
-			Remove:   mag.NewRemoveListItemsByIndexEditor(0),
+			Remove:   mag.RemoveListItemsByIndex(0),
 		},
 	}
 	for _, act := range actions {
@@ -56,7 +56,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
+				Remove:   mag.RemoveListItemsByIndex(0),
 			},
 			want: `items:
 - b
@@ -72,7 +72,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(2),
+				Remove:   mag.RemoveListItemsByIndex(2),
 			},
 			want: `items:
 - a
@@ -88,7 +88,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
+				Remove:   mag.RemoveListItemsByIndex(1),
 			},
 			want: `items:
 - a
@@ -105,7 +105,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.foo.items",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
+				Remove:   mag.RemoveListItemsByIndex(1),
 			},
 			want: `foo:
   items:
@@ -122,7 +122,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(1),
+				Remove:   mag.RemoveListItemsByIndex(1),
 			},
 			want: `items:
 - a # comment1
@@ -139,7 +139,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items[*]",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
+				Remove:   mag.RemoveListItemsByIndex(0),
 			},
 			want: `items:
 - - b
@@ -153,7 +153,7 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "invalid[",
-				Remove:   mag.NewRemoveListItemsByIndexEditor(0),
+				Remove:   mag.RemoveListItemsByIndex(0),
 			},
 			wantErr: true,
 		},

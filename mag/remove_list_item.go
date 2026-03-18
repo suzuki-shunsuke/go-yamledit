@@ -82,8 +82,8 @@ func (e *removeListItemsByIndexEditor) Remove(_ *ast.SequenceNode) ([]int, error
 	return e.indexes, nil
 }
 
-// NewRemoveListItemsByIndexEditor returns a RemoveListItem removing the item at the given index.
-func NewRemoveListItemsByIndexEditor(idxes ...int) RemoveListItem {
+// RemoveListItemsByIndex returns a RemoveListItem removing the item at the given indexes.
+func RemoveListItemsByIndex(idxes ...int) RemoveListItem {
 	s := &removeListItemsByIndexEditor{
 		indexes: idxes,
 	}

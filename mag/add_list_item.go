@@ -88,8 +88,8 @@ func (e *staticAddListItemEditor) Add(_ *ast.SequenceNode) (any, int, error) {
 	return e.value, e.idx, nil
 }
 
-// NewStaticAddListItemEditor returns an AddListItem adding the given value at the given index.
-func NewStaticAddListItemEditor(value any, idx int) AddListItem {
+// AddStaticValueToList returns an AddListItem adding the given value at the given index.
+func AddStaticValueToList(value any, idx int) AddListItem {
 	s := &staticAddListItemEditor{
 		value: value,
 		idx:   idx,
