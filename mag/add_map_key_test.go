@@ -22,10 +22,8 @@ name: foo # keep comment
 	act := &mag.MapActions{
 		YAMLPath: "$",
 		Actions: []mag.MapAction{
-			&mag.AddMapKeyAction{
-				// Add the key "age" with the value 10
-				Add: mag.AddStaticValueToMappingValue("age", 10, 0),
-			},
+			// Add the key "age" with the value 10
+			mag.AddToMap("age", 10, 0),
 		},
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
@@ -54,9 +52,7 @@ age: 10
 			action: mag.MapActions{
 				YAMLPath: "$",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("first", true, 0),
-					},
+					mag.AddToMap("first", true, 0),
 				},
 			},
 			want: `first: true
@@ -72,9 +68,7 @@ age: 10
 			action: mag.MapActions{
 				YAMLPath: "$",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("last", "val", 2),
-					},
+					mag.AddToMap("last", "val", 2),
 				},
 			},
 			want: `name: foo
@@ -91,9 +85,7 @@ c: 3
 			action: mag.MapActions{
 				YAMLPath: "$",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("mid", "x", 1),
-					},
+					mag.AddToMap("mid", "x", 1),
 				},
 			},
 			want: `a: 1
@@ -111,9 +103,7 @@ c: 3
 			action: mag.MapActions{
 				YAMLPath: "$",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("neg", "x", -1),
-					},
+					mag.AddToMap("neg", "x", -1),
 				},
 			},
 			want: `a: 1
@@ -131,9 +121,7 @@ c: 3
 			action: mag.MapActions{
 				YAMLPath: "$.foo",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("qux", 99, 0),
-					},
+					mag.AddToMap("qux", 99, 0),
 				},
 			},
 			want: `foo:
@@ -149,9 +137,7 @@ qux: 99
 			action: mag.MapActions{
 				YAMLPath: "$",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("color", mag.WithComment("red", "a nice color"), 0),
-					},
+					mag.AddToMap("color", mag.WithComment("red", "a nice color"), 0),
 				},
 			},
 			want: `color: red #a nice color
@@ -169,9 +155,7 @@ name: foo
 			action: mag.MapActions{
 				YAMLPath: "$.items",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("new", true, 0),
-					},
+					mag.AddToMap("new", true, 0),
 				},
 			},
 			want: `items:
@@ -209,9 +193,7 @@ age: 10
 			action: mag.MapActions{
 				YAMLPath: "invalid[",
 				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: mag.AddStaticValueToMappingValue("x", "y", 0),
-					},
+					mag.AddToMap("x", "y", 0),
 				},
 			},
 			wantErr: true,

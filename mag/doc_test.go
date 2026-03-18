@@ -37,10 +37,8 @@ children:
 				},
 				// Remove the key "age"
 				mag.RemoveKeys("age"),
-				&mag.AddMapKeyAction{
-					// Add the key "gender"
-					Add: mag.AddStaticValueToMappingValue("gender", "male", 1),
-				},
+				// Add the key "gender"
+				mag.AddToMap("gender", "male", 1),
 			},
 		},
 		&mag.ListActions{
