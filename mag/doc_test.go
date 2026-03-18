@@ -19,6 +19,10 @@ children:
   - name: adam
 `
 
+	type Child struct {
+		Name string
+	}
+
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
 	if err != nil {
 		log.Fatal(err)
@@ -50,14 +54,11 @@ children:
 			YAMLPath: "$.children",
 			Add:      mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
 		},
-		&mag.SortListAction{
+		&mag.SortListAction[Child]{
 			// Sort children by name
 			YAMLPath: "$.children",
-			Sort: func(a, b *mag.SortedItem) int {
-				return strings.Compare(
-					a.Value.(map[string]any)["name"].(string),
-					b.Value.(map[string]any)["name"].(string),
-				)
+			Sort: func(a, b *mag.Item[Child]) int {
+				return strings.Compare(a.Value.Name, b.Value.Name)
 			},
 		},
 	}
