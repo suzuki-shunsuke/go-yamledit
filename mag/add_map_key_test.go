@@ -10,7 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleAddMapKeyAction_Run() {
+func ExampleAddToMap() {
 	yml := `
 name: foo # keep comment
 `
@@ -19,13 +19,8 @@ name: foo # keep comment
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := &mag.MapActions{
-		YAMLPath: "$",
-		Actions: []mag.MapAction{
-			// Add the key "age" with the value 10
-			mag.AddToMap("age", 10, 0),
-		},
-	}
+	// Add the key "age" with the value 10
+	act := mag.Map("$", mag.AddToMap("age", 10, 0))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +35,7 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.MapActions
+		action  mag.Action
 		want    string
 		wantErr bool
 	}{
@@ -49,12 +44,7 @@ func TestAddMapKeyAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					mag.AddToMap("first", true, 0),
-				},
-			},
+			action: mag.Map("$", mag.AddToMap("first", true, 0)),
 			want: `first: true
 name: foo
 age: 10
@@ -65,12 +55,7 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					mag.AddToMap("last", "val", 2),
-				},
-			},
+			action: mag.Map("$", mag.AddToMap("last", "val", 2)),
 			want: `name: foo
 age: 10
 last: val
@@ -82,12 +67,7 @@ last: val
 b: 2
 c: 3
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					mag.AddToMap("mid", "x", 1),
-				},
-			},
+			action: mag.Map("$", mag.AddToMap("mid", "x", 1)),
 			want: `a: 1
 mid: x
 b: 2
@@ -100,12 +80,7 @@ c: 3
 b: 2
 c: 3
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					mag.AddToMap("neg", "x", -1),
-				},
-			},
+			action: mag.Map("$", mag.AddToMap("neg", "x", -1)),
 			want: `a: 1
 b: 2
 neg: x
@@ -118,12 +93,7 @@ c: 3
   bar: 1
   baz: 2
 `,
-			action: mag.MapActions{
-				YAMLPath: "$.foo",
-				Actions: []mag.MapAction{
-					mag.AddToMap("qux", 99, 0),
-				},
-			},
+			action: mag.Map("$.foo", mag.AddToMap("qux", 99, 0)),
 			want: `foo:
 qux: 99
   bar: 1
@@ -134,12 +104,7 @@ qux: 99
 			name: "with comment on value",
 			yml: `name: foo
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					mag.AddToMap("color", mag.WithComment("red", "a nice color"), 0),
-				},
-			},
+			action: mag.Map("$", mag.AddToMap("color", mag.WithComment("red", "a nice color"), 0)),
 			want: `color: red #a nice color
 name: foo
 `,
@@ -152,12 +117,7 @@ name: foo
 - name: b
   val: 2
 `,
-			action: mag.MapActions{
-				YAMLPath: "$.items",
-				Actions: []mag.MapAction{
-					mag.AddToMap("new", true, 0),
-				},
-			},
+			action: mag.Map("$.items", mag.AddToMap("new", true, 0)),
 			want: `items:
 - new: true
     name: a
@@ -172,16 +132,12 @@ name: foo
 			yml: `name: foo
 age: 10
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{
-						Add: func(_ *ast.MappingNode) (any, any, int, error) {
-							return nil, nil, 0, mag.ErrNoop
-						},
-					},
-				},
-			},
+			action: mag.Map(
+				"$",
+				mag.AddToMapByFunc(func(_ *ast.MappingNode) (any, any, int, error) {
+					return nil, nil, 0, mag.ErrNoop
+				}),
+			),
 			want: `name: foo
 age: 10
 `,
@@ -190,24 +146,7 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action: mag.MapActions{
-				YAMLPath: "invalid[",
-				Actions: []mag.MapAction{
-					mag.AddToMap("x", "y", 0),
-				},
-			},
-			wantErr: true,
-		},
-		{
-			name: "Add is nil",
-			yml: `name: foo
-`,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					&mag.AddMapKeyAction{},
-				},
-			},
+			action:  mag.Map("invalid[", mag.AddToMap("x", "y", 0)),
 			wantErr: true,
 		},
 	}

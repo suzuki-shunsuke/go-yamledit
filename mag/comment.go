@@ -12,6 +12,12 @@ type valueWithComment struct {
 
 // WithComment adds a comment to a value.
 func WithComment(v any, comment string) any {
+	if a, ok := v.(*valueWithComment); ok {
+		return &valueWithComment{
+			Value:   a.Value,
+			Comment: comment,
+		}
+	}
 	return &valueWithComment{
 		Value: v, Comment: comment,
 	}
