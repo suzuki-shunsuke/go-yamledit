@@ -7,26 +7,33 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// RemoveListItem returns indexes of items to be removed.
+// SelectItemsFromList returns indexes of items to be removed.
 // If indexes is nil or empty, no item will be removed.
-type RemoveListItem func(seq *ast.SequenceNode) ([]int, error)
+type SelectItemsFromList func(seq *ast.SequenceNode) ([]int, error)
 
-func RemoveItemsFromList(remove RemoveListItem) ListAction {
-	return &RemoveListItemAction{
+// RemoveListItemsByIndex returns a ListAction removing items at the given indexes.
+func RemoveListItemsByIndex(indexes ...int) ListAction {
+	return &removeListItemAction{
+		Remove: func(_ *ast.SequenceNode) ([]int, error) {
+			return indexes, nil
+		},
+	}
+}
+
+// RemoveItemsFromList returns a ListAction removing items selected by the given function.
+func RemoveItemsFromList(remove SelectItemsFromList) ListAction {
+	return &removeListItemAction{
 		Remove: remove,
 	}
 }
 
-// RemoveListItemAction represents an action to remove items from a sequence.
-type RemoveListItemAction struct {
-	// Remove chooses removed items.
-	Remove RemoveListItem
+type removeListItemAction struct {
+	Remove SelectItemsFromList
 }
 
-// Run removes items from the given sequence.
-func (a *RemoveListItemAction) Run(seq *ast.SequenceNode) error {
+func (a *removeListItemAction) Run(seq *ast.SequenceNode) error {
 	if a.Remove == nil {
-		return errors.New("Remove is not set")
+		return errors.New("remove is not set")
 	}
 	indexes, err := a.Remove(seq)
 	if err != nil {
@@ -44,22 +51,4 @@ func (a *RemoveListItemAction) Run(seq *ast.SequenceNode) error {
 	}
 	seq.Values = values
 	return nil
-}
-
-type removeListItemsByIndexEditor struct {
-	indexes []int
-}
-
-func (e *removeListItemsByIndexEditor) Remove(_ *ast.SequenceNode) ([]int, error) {
-	return e.indexes, nil
-}
-
-// RemoveListItemsByIndex returns a ListAction removing items at the given indexes.
-func RemoveListItemsByIndex(idxes ...int) ListAction {
-	s := &removeListItemsByIndexEditor{
-		indexes: idxes,
-	}
-	return &RemoveListItemAction{
-		Remove: s.Remove,
-	}
 }
