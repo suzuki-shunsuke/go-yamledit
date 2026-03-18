@@ -16,6 +16,7 @@ type EditMapValueAction struct {
 	Edit EditMappingValue
 }
 
+// Run edits keys and values of a given map.
 func (a *EditMapValueAction) Run(m *ast.MappingNode) error {
 	mapIter := m.MapRange()
 	for mapIter.Next() {

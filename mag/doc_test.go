@@ -58,7 +58,7 @@ children:
 				},
 				&mag.SortListAction[Child]{
 					// Sort children by name
-					Sort: func(a, b *mag.Item[Child]) int {
+					Sort: func(a, b *mag.Node[Child]) int {
 						return strings.Compare(a.Value.Name, b.Value.Name)
 					},
 				},

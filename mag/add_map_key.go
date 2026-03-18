@@ -28,6 +28,7 @@ type AddMapKeyAction struct {
 // If the index is negative, the key will be inserted at the end.
 type AddMapKey func(node *ast.MappingNode) (any, any, int, error)
 
+// Run adds a key to the given map.
 func (a *AddMapKeyAction) Run(m *ast.MappingNode) error {
 	if a.Add == nil {
 		return errors.New("Add is not set")

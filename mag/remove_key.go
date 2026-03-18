@@ -12,6 +12,7 @@ type RemoveKeyAction struct {
 	Match MatchMappingValue
 }
 
+// Run removes keys from the given map.
 func (a *RemoveKeyAction) Run(m *ast.MappingNode) error {
 	idx := 0
 	mapIter := m.MapRange()

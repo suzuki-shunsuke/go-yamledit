@@ -17,6 +17,7 @@ type RemoveListItemAction struct {
 // If indexes is nil or empty, no item will be removed.
 type RemoveListItem func(seq *ast.SequenceNode) ([]int, error)
 
+// Run removes items from the given sequence.
 func (a *RemoveListItemAction) Run(seq *ast.SequenceNode) error {
 	if a.Remove == nil {
 		return errors.New("Remove is not set")
