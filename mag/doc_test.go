@@ -46,13 +46,12 @@ children:
 			Actions: []mag.ListAction{
 				// Remove child whose index is 1
 				mag.RemoveListItemsByIndex(1),
+				// Add a child at index 0
 				mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
-				&mag.SortListAction[Child]{
-					// Sort children by name
-					Sort: func(a, b *mag.Node[Child]) int {
-						return strings.Compare(a.Value.Name, b.Value.Name)
-					},
-				},
+				// Sort children by name
+				mag.SortList[Child](func(a, b *mag.Node[Child]) int {
+					return strings.Compare(a.Value.Name, b.Value.Name)
+				}),
 			},
 		},
 	}

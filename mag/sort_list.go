@@ -8,10 +8,18 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+func SortList[T any](fn SortFunc[T]) ListAction {
+	return &SortListAction[T]{
+		Sort: fn,
+	}
+}
+
+type SortFunc[T any] func(a, b *Node[T]) int
+
 // SortListAction represents an action to sort lists.
 type SortListAction[T any] struct {
 	// Sort is a function to sort list.
-	Sort func(a, b *Node[T]) int
+	Sort SortFunc[T]
 }
 
 // Node represents a YAML node.
