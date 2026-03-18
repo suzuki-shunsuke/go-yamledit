@@ -9,20 +9,24 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// RemoveListItemAction represents an action to remove items from a sequence.
 type RemoveListItemAction struct {
+	// YAMLPath is a path to YAML mapping value that key or value will be removed.
+	// e.g. "$.reviewer"
+	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Remove   RemoveListItem
-	Depth    int
+	// Remove choose a removed item.
+	Remove RemoveListItem
 }
 
 type RemoveListItem func(seq *ast.SequenceNode) (int, error)
 
 func (a *RemoveListItemAction) Run(node ast.Node) error {
+	if a.YAMLPath == "" {
+		return errors.New("yaml path is not set")
+	}
 	if a.Remove == nil {
 		return errors.New("remove is not set")
-	}
-	if a.Depth < 0 {
-		return fmt.Errorf("depth must be >= 0: %d", a.Depth)
 	}
 	path, err := yaml.PathString(a.YAMLPath)
 	if err != nil {
@@ -32,7 +36,7 @@ func (a *RemoveListItemAction) Run(node ast.Node) error {
 	if err != nil {
 		return fmt.Errorf("filter node by YAML Path: %w", err)
 	}
-	nodes, err := flatten(n, a.Depth)
+	nodes, err := flatten(n, getDepthByPath(a.YAMLPath))
 	if err != nil {
 		return err
 	}
@@ -68,6 +72,7 @@ func (e *staticRemoveListItemEditor) Remove(_ *ast.SequenceNode) (int, error) {
 	return e.idx, nil
 }
 
+// NewStaticRemoveListItemEditor returns a RemoveListItem removing the item at the given index.
 func NewStaticRemoveListItemEditor(idx int) RemoveListItem {
 	s := &staticRemoveListItemEditor{
 		idx: idx,

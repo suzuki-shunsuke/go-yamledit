@@ -23,7 +23,7 @@ children:
 	}
 	actions := []mag.Action{
 		&mag.AddListItemAction{
-			// Add the key "age" with the value 10
+			// Add "zoo" to the first position
 			YAMLPath: "$.children",
 			Add:      mag.NewStaticAddListItemEditor("zoo", 0),
 		},
@@ -39,6 +39,31 @@ children:
 	//   - zoo
 	//   - foo # comment
 	//   - bar
+}
+
+func ExampleAddListItemAction_Run_negative_index() {
+	yml := `
+- foo # comment
+- bar
+`
+
+	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	if err != nil {
+		log.Fatal(err)
+	}
+	act := &mag.AddListItemAction{
+		// Add "zoo" to the last position
+		YAMLPath: "$",
+		Add:      mag.NewStaticAddListItemEditor("zoo", -1),
+	}
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(file.String())
+	// Output:
+	// - foo # comment
+	// - bar
+	// - zoo
 }
 
 func TestAddListItemAction_Run(t *testing.T) {
@@ -135,7 +160,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 `,
 		},
 		{
-			name: "Add returns Noop",
+			name: "Add returns ErrNoop",
 			yml: `items:
 - a
 - b
@@ -143,7 +168,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.AddListItemAction{
 				YAMLPath: "$.items",
 				Add: func(_ *ast.SequenceNode) (any, int, error) {
-					return mag.Noop, 0, nil
+					return nil, 0, mag.ErrNoop
 				},
 			},
 			want: `items:
@@ -173,18 +198,6 @@ func TestAddListItemAction_Run(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "negative depth",
-			yml: `items:
-- a
-`,
-			action: mag.AddListItemAction{
-				YAMLPath: "$.items",
-				Add:      mag.NewStaticAddListItemEditor("x", 0),
-				Depth:    -1,
-			},
-			wantErr: true,
-		},
-		{
 			name: "depth with sequence of sequences",
 			yml: `items:
 - - a
@@ -193,9 +206,8 @@ func TestAddListItemAction_Run(t *testing.T) {
   - d
 `,
 			action: mag.AddListItemAction{
-				YAMLPath: "$.items",
+				YAMLPath: "$.items[*]",
 				Add:      mag.NewStaticAddListItemEditor("new", 0),
-				Depth:    1,
 			},
 			want: `items:
 - - new

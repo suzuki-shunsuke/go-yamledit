@@ -14,20 +14,27 @@ import (
 //   [x] Remove element from a slice
 //   [ ] Sort slice
 
+// AddListItemAction represents an action to add a list item to a YAML sequence node.
 type AddListItemAction struct {
+	// YAMLPath is a path to YAML sequence nodes that new items will be added to.
+	// e.g. "$.reviewers"
+	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Add      AddListItem
-	Depth    int
+	// Add is a function that returns the value and index to insert into the sequence.
+	Add AddListItem
 }
 
+// AddListItem is a function that returns the value and index to insert into a list.
+// If error is ErrNoop, no item will be added.
 type AddListItem func(seq *ast.SequenceNode) (any, int, error)
 
+// Run adds a list item to a YAML sequence node.
 func (a *AddListItemAction) Run(node ast.Node) error {
 	if a.Add == nil {
-		return errors.New("add is not set")
+		return errors.New("Add is not set")
 	}
-	if a.Depth < 0 {
-		return fmt.Errorf("depth must be >= 0: %d", a.Depth)
+	if a.YAMLPath == "" {
+		return errors.New("YAMLPath is not set")
 	}
 	path, err := yaml.PathString(a.YAMLPath)
 	if err != nil {
@@ -37,7 +44,7 @@ func (a *AddListItemAction) Run(node ast.Node) error {
 	if err != nil {
 		return fmt.Errorf("filter node by YAML Path: %w", err)
 	}
-	nodes, err := flatten(n, a.Depth)
+	nodes, err := flatten(n, getDepthByPath(a.YAMLPath))
 	if err != nil {
 		return err
 	}
@@ -55,15 +62,18 @@ func (a *AddListItemAction) add(elem ast.Node) error {
 		return fmt.Errorf("expected a sequence node: %s", elem.Type().String())
 	}
 	val, idx, err := a.Add(seq)
-	if err != nil {
-		return err
-	}
-	if !IsChanged(val) {
+	if errors.Is(err, ErrNoop) {
 		return nil
 	}
-	v, err := yaml.ValueToNode(val)
 	if err != nil {
 		return err
+	}
+	v, err := valueToNode(val)
+	if err != nil {
+		return err
+	}
+	if idx < 0 {
+		idx += len(seq.Values) + 1
 	}
 	seq.Values = append(seq.Values[:idx], append([]ast.Node{v}, seq.Values[idx:]...)...)
 	return nil
@@ -78,6 +88,7 @@ func (e *staticAddListItemEditor) Add(_ *ast.SequenceNode) (any, int, error) {
 	return e.value, e.idx, nil
 }
 
+// NewStaticAddListItemEditor returns an AddListItem adding the given value at the given index.
 func NewStaticAddListItemEditor(value any, idx int) AddListItem {
 	s := &staticAddListItemEditor{
 		value: value,

@@ -156,9 +156,8 @@ func TestRemoveListItemAction_Run(t *testing.T) {
   - d
 `,
 			action: mag.RemoveListItemAction{
-				YAMLPath: "$.items",
+				YAMLPath: "$.items[*]",
 				Remove:   mag.NewStaticRemoveListItemEditor(0),
-				Depth:    1,
 			},
 			want: `items:
 - - b
@@ -183,18 +182,6 @@ func TestRemoveListItemAction_Run(t *testing.T) {
 `,
 			action: mag.RemoveListItemAction{
 				YAMLPath: "$.items",
-			},
-			wantErr: true,
-		},
-		{
-			name: "negative depth",
-			yml: `items:
-- a
-`,
-			action: mag.RemoveListItemAction{
-				YAMLPath: "$.items",
-				Remove:   mag.NewStaticRemoveListItemEditor(0),
-				Depth:    -1,
 			},
 			wantErr: true,
 		},

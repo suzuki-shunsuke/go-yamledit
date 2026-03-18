@@ -3,15 +3,18 @@ package mag
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
+	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 )
 
 type noop struct{}
 
-var Noop = noop{} //nolint:gochecknoglobals
+// NoChange is a sentinel value that indicates no change should be made against mapping key or value.
+var NoChange = noop{} //nolint:gochecknoglobals
 
-func IsChanged(value any) bool {
+func isChanged(value any) bool {
 	_, ok := value.(noop)
 	return !ok
 }
@@ -56,4 +59,23 @@ func flatten(node ast.Node, depth int) ([]ast.Node, error) {
 		ret = append(ret, nodes...)
 	}
 	return ret, nil
+}
+
+func getDepthByPath(yamlPath string) int {
+	return strings.Count(yamlPath, "[*]") + strings.Count(yamlPath, "..")
+}
+
+func valueToNode(value any) (ast.Node, error) {
+	valWithComment := toValueWithComment(value)
+	v, err := yaml.ValueToNode(valWithComment.Value)
+	if err != nil {
+		return nil, err
+	}
+	if valWithComment.Comment == "" {
+		return v, nil
+	}
+	if err := v.SetComment(commentGroupFromString(valWithComment.Comment)); err != nil {
+		return nil, err
+	}
+	return v, nil
 }

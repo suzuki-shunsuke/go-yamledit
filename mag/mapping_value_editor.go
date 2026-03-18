@@ -5,10 +5,17 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// MappingValueEditor edits mapping keys and values.
 type MappingValueEditor interface {
+	// Edit returns a key and value to be set for the mapping value node.
+	// The first return value is the key, the second is the value.
+	// If NoChange is returned, key or value is not changed.
+	// NoChange is used to change only one of the key or value.
 	Edit(mv *ast.MappingValueNode) (any, any, error)
 }
 
+// NewStaticMappingValueEditor returns a MappingValueEditor editing a mapping key and value to the given key and value.
+// Matcher must choose only one pair of key and value.
 func NewStaticMappingValueEditor(key, value any) MappingValueEditor {
 	return &generalMappingValueEditor{
 		edit: func(_ *ast.MappingValueNode, _ *MappingValue) (any, any, error) {
@@ -17,17 +24,18 @@ func NewStaticMappingValueEditor(key, value any) MappingValueEditor {
 	}
 }
 
+// MappingValue represents a mapping key and value.
 type MappingValue struct {
-	Key          any
-	Value        any
-	KeyComment   string
-	ValueComment string
+	Key     any
+	Value   any
+	Comment string
 }
 
 type generalMappingValueEditor struct {
 	edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)
 }
 
+// NewGeneralMappingValueEditor returns a MappingValueEditor editing a mapping key and value using the given edit function.
 func NewGeneralMappingValueEditor(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) MappingValueEditor {
 	return &generalMappingValueEditor{
 		edit: edit,
@@ -44,20 +52,8 @@ func (f *generalMappingValueEditor) Edit(node *ast.MappingValueNode) (any, any, 
 		return nil, nil, err
 	}
 	return f.edit(node, &MappingValue{
-		Key:          kv,
-		Value:        value,
-		KeyComment:   getComment(node.Key),
-		ValueComment: getComment(node.Value),
+		Key:     kv,
+		Value:   value,
+		Comment: getComment(node.Value),
 	})
-}
-
-func getComment(node ast.Node) string {
-	if node == nil {
-		return ""
-	}
-	cn := node.GetComment()
-	if cn == nil {
-		return ""
-	}
-	return cn.String()
 }
