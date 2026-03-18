@@ -30,3 +30,10 @@ func (a *RemoveKeyAction) Run(m *ast.MappingNode) error {
 	}
 	return nil
 }
+
+// RemoveKeys returns a MapAction removing given keys from a map.
+func RemoveKeys(keys ...string) MapAction {
+	return &RemoveKeyAction{
+		Match: MatchMappingValueByKey(keys...),
+	}
+}

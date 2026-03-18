@@ -35,10 +35,8 @@ children:
 					Match: mag.MatchMappingValueByKey("name"),
 					Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
 				},
-				&mag.RemoveKeyAction{
-					// Remove the key "age"
-					Match: mag.MatchMappingValueByKey("age"),
-				},
+				// Remove the key "age"
+				mag.RemoveKeys("age"),
 				&mag.AddMapKeyAction{
 					// Add the key "gender"
 					Add: mag.AddStaticValueToMappingValue("gender", "male", 1),
