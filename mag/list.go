@@ -8,15 +8,29 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type ListActions struct {
-	YAMLPath string
-	Actions  []ListAction
+// List returns Action editing lists.
+func List(yamlPath string, actions ...ListAction) Action {
+	return &ListActions{
+		YAMLPath: yamlPath,
+		Actions:  actions,
+	}
 }
 
+// ListAction represents an action editing a list.
 type ListAction interface {
 	Run(seq *ast.SequenceNode) error
 }
 
+// ListActions is an Action editing lists.
+type ListActions struct {
+	// YAMLPath is a path to edited lists.
+	// e.g. "$.reviewers"
+	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
+	YAMLPath string
+	Actions  []ListAction
+}
+
+// Run edits lists.
 func (a *ListActions) Run(node ast.Node) error {
 	if a.YAMLPath == "" {
 		return errors.New("YAMLPath is not set")

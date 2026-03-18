@@ -27,33 +27,29 @@ children:
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		&mag.MapActions{
-			YAMLPath: "$",
-			Actions: []mag.MapAction{
-				&mag.EditMapValueAction{
-					// Edit name to "ryan"
-					Match: mag.MatchMappingValueByKey("name"),
-					Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
-				},
-				// Remove the key "age"
-				mag.RemoveKeys("age"),
-				// Add the key "gender"
-				mag.AddToMap("gender", "male", 1),
+		mag.Map(
+			"$",
+			// Edit name to "ryan"
+			&mag.EditMapValueAction{
+				Match: mag.MatchMappingValueByKey("name"),
+				Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
 			},
-		},
-		&mag.ListActions{
-			YAMLPath: "$.children",
-			Actions: []mag.ListAction{
-				// Remove child whose index is 1
-				mag.RemoveListItemsByIndex(1),
-				// Add a child at index 0
-				mag.AddStaticValueToList(map[string]any{"name": "jessica"}, 0),
-				// Sort children by name
-				mag.SortList[Child](func(a, b *mag.Node[Child]) int {
-					return strings.Compare(a.Value.Name, b.Value.Name)
-				}),
-			},
-		},
+			// Remove the key "age"
+			mag.RemoveKeys("age"),
+			// Add the key "gender"
+			mag.AddToMap("gender", "male", 1),
+		),
+		mag.List(
+			"$.children",
+			// Remove child whose index is 1
+			mag.RemoveListItemsByIndex(1),
+			// Add a child at index 0
+			mag.AddValueToList(map[string]any{"name": "jessica"}, 0),
+			// Sort children by name
+			mag.SortList[Child](func(a, b *mag.Node[Child]) int {
+				return strings.Compare(a.Value.Name, b.Value.Name)
+			}),
+		),
 	}
 	for _, act := range actions {
 		if err := act.Run(file.Docs[0].Body); err != nil {

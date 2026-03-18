@@ -24,7 +24,7 @@ children:
 	act := &mag.ListActions{
 		YAMLPath: "$.children",
 		Actions: []mag.ListAction{
-			mag.AddStaticValueToList("zoo", 0),
+			mag.AddValueToList("zoo", 0),
 		},
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
@@ -52,7 +52,7 @@ func ExampleAddListItemAction_Run_negative_index() {
 		YAMLPath: "$",
 		Actions: []mag.ListAction{
 			// Add "zoo" to the last position
-			mag.AddStaticValueToList("zoo", -1),
+			mag.AddValueToList("zoo", -1),
 		},
 	}
 	if err := act.Run(file.Docs[0].Body); err != nil {
@@ -83,7 +83,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("first", 0),
+					mag.AddValueToList("first", 0),
 				},
 			},
 			want: `items:
@@ -101,7 +101,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("last", 2),
+					mag.AddValueToList("last", 2),
 				},
 			},
 			want: `items:
@@ -120,7 +120,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("mid", 1),
+					mag.AddValueToList("mid", 1),
 				},
 			},
 			want: `items:
@@ -140,7 +140,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.foo.items",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("z", 0),
+					mag.AddValueToList("z", 0),
 				},
 			},
 			want: `foo:
@@ -159,7 +159,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("new", 1),
+					mag.AddValueToList("new", 1),
 				},
 			},
 			want: `items:
@@ -197,7 +197,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "invalid[",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("x", 0),
+					mag.AddValueToList("x", 0),
 				},
 			},
 			wantErr: true,
@@ -226,7 +226,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			action: mag.ListActions{
 				YAMLPath: "$.items[*]",
 				Actions: []mag.ListAction{
-					mag.AddStaticValueToList("new", 0),
+					mag.AddValueToList("new", 0),
 				},
 			},
 			want: `items:
