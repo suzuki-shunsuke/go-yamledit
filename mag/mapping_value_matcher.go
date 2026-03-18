@@ -5,14 +5,16 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// MatchMappingValue returns true if a mapping value node matches.
 type MatchMappingValue func(kv *ast.MappingValueNode) (bool, error)
 
 type keyMVMatcher struct {
-	key string
+	keys []string
 }
 
-func MatchMappingValueByKey(key string) MatchMappingValue {
-	m := &keyMVMatcher{key: key}
+// MatchMappingValueByKey returns a MatchMappingValue function that matches a mapping value node by keys.
+func MatchMappingValueByKey(keys ...string) MatchMappingValue {
+	m := &keyMVMatcher{keys: keys}
 	return m.Match
 }
 
@@ -21,9 +23,15 @@ func (m *keyMVMatcher) Match(kv *ast.MappingValueNode) (bool, error) {
 	if err := yaml.NodeToValue(kv.Key, &keyV); err != nil {
 		return false, err
 	}
-	return compareKey(m.key, keyV), nil
+	for _, key := range m.keys {
+		if compareKey(key, keyV) {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
+// MatchAllMappingValues returns a MatchMappingValue function that matches all mapping value nodes.
 func MatchAllMappingValues() MatchMappingValue {
 	m := &allMVMatcher{}
 	return m.Match
