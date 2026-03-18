@@ -7,15 +7,21 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// RemoveListItem returns indexes of items to be removed.
+// If indexes is nil or empty, no item will be removed.
+type RemoveListItem func(seq *ast.SequenceNode) ([]int, error)
+
+func RemoveItemsFromList(remove RemoveListItem) ListAction {
+	return &RemoveListItemAction{
+		Remove: remove,
+	}
+}
+
 // RemoveListItemAction represents an action to remove items from a sequence.
 type RemoveListItemAction struct {
 	// Remove chooses removed items.
 	Remove RemoveListItem
 }
-
-// RemoveListItem returns indexes of items to be removed.
-// If indexes is nil or empty, no item will be removed.
-type RemoveListItem func(seq *ast.SequenceNode) ([]int, error)
 
 // Run removes items from the given sequence.
 func (a *RemoveListItemAction) Run(seq *ast.SequenceNode) error {

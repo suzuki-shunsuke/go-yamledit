@@ -9,7 +9,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleRemoveKeyAction_Run() {
+func ExampleRemoveKeys() {
 	yml := `
 name: foo
 age: 10 # keep comment
@@ -19,17 +19,14 @@ age: 10 # keep comment
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := &mag.MapActions{
-		YAMLPath: "$",
-		Actions: []mag.MapAction{
-			&mag.RemoveKeyAction{
-				Match: mag.MatchMappingValueByKey("name"),
-			},
-			&mag.RemoveKeyAction{
-				Match: mag.MatchMappingValueByKey("id"), // unknown key
-			},
-		},
-	}
+	act := mag.Map(
+		"$",
+		mag.RemoveKeys(
+			"name",
+			"id", // unknown key is ignored
+		),
+	)
+
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -38,12 +35,12 @@ age: 10 # keep comment
 	// age: 10 # keep comment
 }
 
-func TestRemoveKeyAction_Run(t *testing.T) {
+func TestRemoveKeys(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name    string
 		yml     string
-		action  mag.MapActions
+		action  mag.Action
 		want    string
 		wantErr bool
 	}{
@@ -52,14 +49,7 @@ func TestRemoveKeyAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					&mag.RemoveKeyAction{
-						Match: mag.MatchMappingValueByKey("name"),
-					},
-				},
-			},
+			action: mag.Map("$", mag.RemoveKeys("name")),
 			want: `age: 10
 `,
 		},
@@ -67,14 +57,7 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.MapActions{
-				YAMLPath: "$",
-				Actions: []mag.MapAction{
-					&mag.RemoveKeyAction{
-						Match: mag.MatchMappingValueByKey("missing"),
-					},
-				},
-			},
+			action: mag.Map("$", mag.RemoveKeys("missing")),
 			want: `name: foo
 `,
 		},
@@ -84,14 +67,7 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.MapActions{
-				YAMLPath: "$.foo",
-				Actions: []mag.MapAction{
-					&mag.RemoveKeyAction{
-						Match: mag.MatchMappingValueByKey("bar"),
-					},
-				},
-			},
+			action: mag.Map("$.foo", mag.RemoveKeys("bar")),
 			want: `foo:
   baz: 2
 `,
@@ -104,14 +80,7 @@ age: 10
 - name: b
   val: 2
 `,
-			action: mag.MapActions{
-				YAMLPath: "$.items",
-				Actions: []mag.MapAction{
-					&mag.RemoveKeyAction{
-						Match: mag.MatchMappingValueByKey("name"),
-					},
-				},
-			},
+			action: mag.Map("$.items", mag.RemoveKeys("name")),
 			want: `items:
 - val: 1
 - val: 2
@@ -121,14 +90,7 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action: mag.MapActions{
-				YAMLPath: "invalid[",
-				Actions: []mag.MapAction{
-					&mag.RemoveKeyAction{
-						Match: mag.MatchMappingValueByKey("name"),
-					},
-				},
-			},
+			action:  mag.Map("invalid[", mag.RemoveKeys("name")),
 			wantErr: true,
 		},
 	}
