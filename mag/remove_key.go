@@ -6,14 +6,25 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// RemoveKeyAction represents an action to remove keys from a map.
-type RemoveKeyAction struct {
-	// Match filters mapping keys and values to be removed.
+// RemoveItemsFromMap returns a MapAction removing items from a map.
+func RemoveItemsFromMap(match MatchMappingValue) MapAction {
+	return &removeKeyAction{
+		Match: match,
+	}
+}
+
+// RemoveKeys returns a MapAction removing given keys from a map.
+func RemoveKeys(keys ...string) MapAction {
+	return &removeKeyAction{
+		Match: MatchMappingValueByKey(keys...),
+	}
+}
+
+type removeKeyAction struct {
 	Match MatchMappingValue
 }
 
-// Run removes keys from the given map.
-func (a *RemoveKeyAction) Run(m *ast.MappingNode) error {
+func (a *removeKeyAction) Run(m *ast.MappingNode) error {
 	idx := 0
 	mapIter := m.MapRange()
 	for mapIter.Next() {
@@ -29,11 +40,4 @@ func (a *RemoveKeyAction) Run(m *ast.MappingNode) error {
 		return nil
 	}
 	return nil
-}
-
-// RemoveKeys returns a MapAction removing given keys from a map.
-func RemoveKeys(keys ...string) MapAction {
-	return &RemoveKeyAction{
-		Match: MatchMappingValueByKey(keys...),
-	}
 }

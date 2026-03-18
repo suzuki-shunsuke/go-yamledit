@@ -9,18 +9,12 @@ import (
 )
 
 func SortList[T any](fn SortFunc[T]) ListAction {
-	return &SortListAction[T]{
+	return &sortListAction[T]{
 		Sort: fn,
 	}
 }
 
 type SortFunc[T any] func(a, b *Node[T]) int
-
-// SortListAction represents an action to sort lists.
-type SortListAction[T any] struct {
-	// Sort is a function to sort list.
-	Sort SortFunc[T]
-}
 
 // Node represents a YAML node.
 type Node[T any] struct {
@@ -31,8 +25,11 @@ type Node[T any] struct {
 	Comment string
 }
 
-// Run sorts the given sequence.
-func (a *SortListAction[T]) Run(seq *ast.SequenceNode) error {
+type sortListAction[T any] struct {
+	Sort SortFunc[T]
+}
+
+func (a *sortListAction[T]) Run(seq *ast.SequenceNode) error {
 	if a.Sort == nil {
 		return errors.New("sort is not set")
 	}

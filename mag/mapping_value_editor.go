@@ -11,6 +11,14 @@ import (
 // NoChange is used to change only one of the key or value.
 type EditMappingValue func(mv *ast.MappingValueNode) (any, any, error)
 
+// NewEditMappingValue returns a MappingValueEditor editing a mapping key and value using the given edit function.
+func NewEditMappingValue(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) EditMappingValue {
+	e := &generalMappingValueEditor{
+		edit: edit,
+	}
+	return e.Edit
+}
+
 // EditMappingValueStatic returns a MappingValueEditor editing a mapping key and value to the given key and value.
 // Matcher must choose only one pair of key and value.
 func EditMappingValueStatic(key, value any) EditMappingValue {
@@ -31,14 +39,6 @@ type MappingValue struct {
 
 type generalMappingValueEditor struct {
 	edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)
-}
-
-// NewEditMappingValue returns a MappingValueEditor editing a mapping key and value using the given edit function.
-func NewEditMappingValue(edit func(node *ast.MappingValueNode, mv *MappingValue) (any, any, error)) EditMappingValue {
-	e := &generalMappingValueEditor{
-		edit: edit,
-	}
-	return e.Edit
 }
 
 func (f *generalMappingValueEditor) Edit(node *ast.MappingValueNode) (any, any, error) {
