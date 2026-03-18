@@ -21,7 +21,7 @@ type SortListAction[T any] struct {
 
 type Item[T any] struct {
 	Node    ast.Node
-	Value   *T
+	Value   T
 	Comment string
 }
 
@@ -64,7 +64,7 @@ func (a *SortListAction[T]) sort(elem ast.Node) error {
 		return fmt.Errorf("expected a sequence node: %s", elem.Type().String())
 	}
 
-	var values []*T
+	var values []T
 	if err := yaml.NodeToValue(seq, &values); err != nil {
 		return err
 	}
