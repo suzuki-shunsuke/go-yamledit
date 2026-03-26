@@ -9,7 +9,7 @@ import (
 type MatchMappingValue func(kv *ast.MappingValueNode) (bool, error)
 
 // MatchMappingValueByKey returns a MatchMappingValue function that matches a mapping value node by keys.
-func MatchMappingValueByKey(keys ...string) MatchMappingValue {
+func MatchMappingValueByKey(keys ...any) MatchMappingValue {
 	return func(kv *ast.MappingValueNode) (bool, error) {
 		var keyV any
 		if err := yaml.NodeToValue(kv.Key, &keyV); err != nil {

@@ -14,7 +14,7 @@ func RemoveItemsFromMap(match MatchMappingValue) MapAction {
 }
 
 // RemoveKeys returns a MapAction removing given keys from a map.
-func RemoveKeys(keys ...string) MapAction {
+func RemoveKeys(keys ...any) MapAction {
 	return &removeKeyAction{
 		Match: MatchMappingValueByKey(keys...),
 	}

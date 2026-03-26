@@ -12,6 +12,7 @@ import (
 func Example() {
 	yml := `
 name: jack # comment is kept
+work: engineer
 age: 8
 children:
   - name: david
@@ -20,6 +21,11 @@ children:
 
 	type Child struct {
 		Name string
+	}
+	type Parent struct {
+		Name     string
+		Age      int
+		Children []Child
 	}
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
@@ -30,14 +36,37 @@ children:
 		mag.Map(
 			"$",
 			// Edit name to "ryan"
-			&mag.EditMapValueAction{
-				Match: mag.MatchMappingValueByKey("name"),
-				Edit:  mag.EditMappingValueStatic(mag.NoChange, "ryan"),
-			},
+			mag.SetKey("name", "ryan", nil),
 			// Remove the key "age"
 			mag.RemoveKeys("age"),
-			// Add the key "gender"
-			mag.AddToMap("gender", "male", 1),
+			// Rename the key "work" to "job"
+			mag.RenameKey("work", "job"),
+			// Add the key "gender" after "name"
+			mag.SetKey("gender", "male", &mag.SetKeyOption{
+				InsertLocations: []*mag.InsertLocation{
+					{
+						AfterKey: "name",
+					},
+				},
+			}),
+			&mag.EditMapAction{
+				Edit: func(m *mag.MapValue, unmarshal func(any) error) ([]mag.Change, error) {
+					p := Parent{}
+					if err := unmarshal(&p); err != nil {
+						return nil, err
+					}
+					mv, ok := m.Map["name"]
+					if !ok {
+						return nil, nil
+					}
+					return []mag.Change{
+						&mag.RenameKeyAction{
+							Key:  "first_name",
+							Node: mv.Node,
+						},
+					}, nil
+				},
+			},
 		),
 		mag.List(
 			"$.children",
@@ -58,8 +87,9 @@ children:
 	}
 	fmt.Println(file.String())
 	// Output:
-	// name: ryan # comment is kept
+	// first_name: ryan # comment is kept
 	// gender: male
+	// job: engineer
 	// children:
 	//   - name: david
 	//   - name: jessica
