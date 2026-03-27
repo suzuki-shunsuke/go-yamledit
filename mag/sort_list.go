@@ -11,7 +11,7 @@ type SortFunc[T any] func(a, b *Node[T]) int
 
 func SortList[T any](fn SortFunc[T]) ListAction {
 	return &EditListAction[T]{
-		Edit: func(m *ListValue[T], _ func(any) error) ([]Change, error) {
+		Edit: func(m *ListValue[T]) ([]Change, error) {
 			if fn == nil {
 				return nil, errors.New("sort function is nil")
 			}

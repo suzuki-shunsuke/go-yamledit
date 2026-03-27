@@ -12,7 +12,7 @@ type EditListAction[T any] struct {
 	Edit EditList[T]
 }
 
-type EditList[T any] func(m *ListValue[T], unmarshal func(any) error) ([]Change, error)
+type EditList[T any] func(m *ListValue[T]) ([]Change, error)
 
 type ListValue[T any] struct {
 	List []*Node[T]
@@ -40,9 +40,7 @@ func (a *EditListAction[T]) Run(seq *ast.SequenceNode) error {
 		}
 	}
 
-	edits, err := a.Edit(mv, func(v any) error {
-		return yaml.NodeToValue(seq, &v)
-	})
+	edits, err := a.Edit(mv)
 	if err != nil {
 		return err
 	}
