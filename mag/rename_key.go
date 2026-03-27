@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 )
 
@@ -34,7 +33,7 @@ type ChangeRenameKey struct {
 func (a *ChangeRenameKey) Run() error {
 	oldToken := a.Node.Key.GetToken()
 	comment := a.Node.Key.GetComment()
-	v, err := yaml.ValueToNode(a.Key)
+	v, err := valueToNode(a.Key)
 	if err != nil {
 		return err
 	}

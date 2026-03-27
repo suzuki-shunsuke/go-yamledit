@@ -7,7 +7,19 @@ import (
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/parser"
 )
+
+// BytesToNode parses the given YAML bytes and returns the root node.
+// Returns an error if the bytes cannot be parsed.
+// YAML should be a single document.
+func BytesToNode(b []byte) (ast.Node, error) {
+	file, err := parser.ParseBytes(b, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	return file.Docs[0].Body, nil
+}
 
 type noop struct{}
 
@@ -87,6 +99,9 @@ func getDepthByPath(yamlPath string) int { //nolint:cyclop
 }
 
 func valueToNode(value any) (ast.Node, error) {
+	if node, ok := value.(ast.Node); ok {
+		return node, nil
+	}
 	valWithComment := toValueWithComment(value)
 	v, err := yaml.ValueToNode(valWithComment.Value)
 	if err != nil {

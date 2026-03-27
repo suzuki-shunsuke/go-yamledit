@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/token"
 )
@@ -134,7 +133,7 @@ type ChangeSetValue struct {
 }
 
 func (a *ChangeSetValue) Run() error {
-	v, err := yaml.ValueToNode(a.Value)
+	v, err := valueToNode(a.Value)
 	if err != nil {
 		return fmt.Errorf("convert value to node: %w", err)
 	}
