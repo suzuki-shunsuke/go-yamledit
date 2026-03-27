@@ -3,6 +3,7 @@ package mag_test
 import (
 	"fmt"
 	"log"
+	"testing"
 
 	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
@@ -42,4 +43,166 @@ age: 10
 	// name: ryan # keep comment
 	// gender: male
 	// age: 10
+}
+
+func TestSetKey(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		yml     string
+		action  mag.Action
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "set existing key",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", nil)),
+			want: `name: bar
+age: 10
+`,
+		},
+		{
+			name: "add new key append",
+			yml: `name: foo
+`,
+			action: mag.Map("$", mag.SetKey("age", 10, nil)),
+			want: `name: foo
+age: 10
+`,
+		},
+		{
+			name: "ignore if key not exist",
+			yml: `name: foo
+`,
+			action: mag.Map("$", mag.SetKey("age", 10, &mag.SetKeyOption{
+				IgnoreIfKeyNotExist: true,
+			})),
+			want: `name: foo
+`,
+		},
+		{
+			name: "ignore if key exist",
+			yml: `name: foo
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+				IgnoreIfKeyExist: true,
+			})),
+			want: `name: foo
+`,
+		},
+		{
+			name: "insert first",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+				InsertLocations: []*mag.InsertLocation{
+					{First: true},
+				},
+			})),
+			want: `gender: male
+name: foo
+age: 10
+`,
+		},
+		{
+			name: "insert before key",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+				InsertLocations: []*mag.InsertLocation{
+					{BeforeKey: "age"},
+				},
+			})),
+			want: `name: foo
+gender: male
+age: 10
+`,
+		},
+		{
+			name: "insert after key",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+				InsertLocations: []*mag.InsertLocation{
+					{AfterKey: "name"},
+				},
+			})),
+			want: `name: foo
+gender: male
+age: 10
+`,
+		},
+		{
+			name: "insert location fallback to append",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+				InsertLocations: []*mag.InsertLocation{
+					{BeforeKey: "missing"},
+				},
+			})),
+			want: `name: foo
+age: 10
+gender: male
+`,
+		},
+		{
+			name: "preserve comment on update",
+			yml: `name: foo # important
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", nil)),
+			want: `name: bar # important
+age: 10
+`,
+		},
+		{
+			name: "nested path",
+			yml: `foo:
+  bar: 1
+  baz: 2
+`,
+			action: mag.Map("$.foo", mag.SetKey("bar", 99, nil)),
+			want: `foo:
+  bar: 99
+  baz: 2
+`,
+		},
+		{
+			name:    "invalid yaml path",
+			yml:     `name: foo`,
+			action:  mag.Map("invalid[", mag.SetKey("name", "bar", nil)),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			file, err := parser.ParseBytes([]byte(tt.yml), parser.ParseComments)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = tt.action.Run(file.Docs[0].Body)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := file.String()
+			if got != tt.want {
+				t.Errorf("got:\n%s\nwant:\n%s", got, tt.want)
+			}
+		})
+	}
 }

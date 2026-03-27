@@ -106,9 +106,8 @@ age: 10
 `,
 		},
 		{
-			name: "invalid yaml path",
-			yml: `name: foo
-`,
+			name:    "invalid yaml path",
+			yml:     `name: foo`,
 			action:  mag.Map("invalid[", mag.RenameKey("name", "new_name")),
 			wantErr: true,
 		},
