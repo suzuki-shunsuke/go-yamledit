@@ -1,8 +1,10 @@
 package mag_test
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"testing"
 
 	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
@@ -104,4 +106,197 @@ type: yoo # keep comment 3
 	// name: new name # keep comment
 	// age-2: 10 # keep comment 2
 	// type-2: yoo-2 # keep comment 3
+}
+
+func TestEditMapAction_Run(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name    string
+		yml     string
+		action  mag.Action
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "set value",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					kv, ok := m.Map["name"]
+					if !ok {
+						return nil, nil
+					}
+					return []mag.Change{
+						&mag.ChangeSetValue{
+							Value: "bar",
+							Node:  kv.Node,
+						},
+					}, nil
+				},
+			}),
+			want: `name: bar
+age: 10
+`,
+		},
+		{
+			name: "rename key",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					kv, ok := m.Map["name"]
+					if !ok {
+						return nil, nil
+					}
+					return []mag.Change{
+						&mag.ChangeRenameKey{
+							Key:  "first_name",
+							Node: kv.Node,
+						},
+					}, nil
+				},
+			}),
+			want: `first_name: foo
+age: 10
+`,
+		},
+		{
+			name: "key not found",
+			yml: `name: foo
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					_, ok := m.Map["missing"]
+					if !ok {
+						return nil, nil
+					}
+					return nil, nil
+				},
+			}),
+			want: `name: foo
+`,
+		},
+		{
+			name: "preserve comment",
+			yml: `name: foo # important
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					kv := m.Map["name"]
+					return []mag.Change{
+						&mag.ChangeSetValue{
+							Value: "bar",
+							Node:  kv.Node,
+						},
+					}, nil
+				},
+			}),
+			want: `name: bar # important
+`,
+		},
+		{
+			name: "edit func returns error",
+			yml: `name: foo
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					return nil, errors.New("edit error")
+				},
+			}),
+			wantErr: true,
+		},
+		{
+			name: "multiple changes",
+			yml: `name: foo
+age: 10
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					return []mag.Change{
+						&mag.ChangeSetValue{
+							Value: "bar",
+							Node:  m.Map["name"].Node,
+						},
+						&mag.ChangeSetValue{
+							Value: 20,
+							Node:  m.Map["age"].Node,
+						},
+					}, nil
+				},
+			}),
+			want: `name: bar
+age: 20
+`,
+		},
+		{
+			name: "no changes",
+			yml: `name: foo
+`,
+			action: mag.Map("$", &mag.EditMapAction[string]{
+				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					return nil, nil
+				},
+			}),
+			want: `name: foo
+`,
+		},
+		{
+			name: "nested path",
+			yml: `foo:
+  bar: 1
+  baz: 2
+`,
+			action: mag.Map("$.foo", &mag.EditMapAction[string]{
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					kv := m.Map["bar"]
+					return []mag.Change{
+						&mag.ChangeSetValue{
+							Value: 99,
+							Node:  kv.Node,
+						},
+					}, nil
+				},
+			}),
+			want: `foo:
+  bar: 99
+  baz: 2
+`,
+		},
+		{
+			name:    "invalid yaml path",
+			yml:     `name: foo`,
+			action:  mag.Map("invalid[", &mag.EditMapAction[string]{
+				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+					return nil, nil
+				},
+			}),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			file, err := parser.ParseBytes([]byte(tt.yml), parser.ParseComments)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = tt.action.Run(file.Docs[0].Body)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := file.String()
+			if got != tt.want {
+				t.Errorf("got:\n%s\nwant:\n%s", got, tt.want)
+			}
+		})
+	}
 }
