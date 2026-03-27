@@ -31,38 +31,13 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 				if err != nil {
 					return nil, fmt.Errorf("convert key/value to node: %w", err)
 				}
-				changeAddKey := &ChangeAddKey{
-					M:     m.Node,
-					Nodes: []*ast.MappingValueNode{mvn},
-				}
-				changes := []Change{changeAddKey}
-				for _, location := range opt.GetInsertLocations() {
-					if location.First {
-						return changes, nil
-					}
-					if location.BeforeKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
-							return compareKey(location.BeforeKey, v.Key)
-						})
-						if idx == -1 {
-							continue
-						}
-						changeAddKey.Index = idx
-						return changes, nil
-					}
-					if location.AfterKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
-							return compareKey(location.AfterKey, v.Key)
-						})
-						if idx == -1 {
-							continue
-						}
-						changeAddKey.Index = idx + 1
-						return changes, nil
-					}
-				}
-				changeAddKey.Index = len(m.KeyValues)
-				return changes, nil
+				return []Change{
+					&ChangeAddKey{
+						M:     m.Node,
+						Nodes: []*ast.MappingValueNode{mvn},
+						Index: findInsertIndex(opt.GetInsertLocations(), m.KeyValues),
+					},
+				}, nil
 			}
 			if opt.GetIgnoreIfKeyExist() {
 				return nil, nil
@@ -115,6 +90,31 @@ func (o *SetKeyOption) GetInsertLocations() []*InsertLocation {
 		return nil
 	}
 	return o.InsertLocations
+}
+
+func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
+	for _, loc := range locations {
+		if loc.First {
+			return 0
+		}
+		if loc.BeforeKey != nil {
+			idx := slices.IndexFunc(kvs, func(v *KeyValue[any]) bool {
+				return compareKey(loc.BeforeKey, v.Key)
+			})
+			if idx != -1 {
+				return idx
+			}
+		}
+		if loc.AfterKey != nil {
+			idx := slices.IndexFunc(kvs, func(v *KeyValue[any]) bool {
+				return compareKey(loc.AfterKey, v.Key)
+			})
+			if idx != -1 {
+				return idx + 1
+			}
+		}
+	}
+	return len(kvs)
 }
 
 type ChangeAddKey struct {

@@ -6,8 +6,7 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// SelectItemsFromList returns indexes of items to be removed.
-// If indexes is nil or empty, no item will be removed.
+// SelectItemFromList returns whether the item is selected.
 type SelectItemFromList[T any] func(value *Node[T]) (bool, error)
 
 // RemoveItemsFromList returns a ListAction removing items selected by the given function.

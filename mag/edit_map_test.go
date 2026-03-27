@@ -266,9 +266,9 @@ age: 20
 `,
 		},
 		{
-			name:    "invalid yaml path",
-			yml:     `name: foo`,
-			action:  mag.Map("invalid[", &mag.EditMapAction[string, any]{
+			name: "invalid yaml path",
+			yml:  `name: foo`,
+			action: mag.Map("invalid[", &mag.EditMapAction[string, any]{
 				Edit: func(_ *mag.MapValue[string, any]) ([]mag.Change, error) {
 					return nil, nil
 				},

@@ -14,11 +14,6 @@ type noop struct{}
 // NoChange is a sentinel value that indicates no change should be made against mapping key or value.
 var NoChange = noop{} //nolint:gochecknoglobals
 
-func isChanged(value any) bool {
-	_, ok := value.(noop)
-	return !ok
-}
-
 func unifyInt(value any) (any, bool) {
 	switch v := value.(type) {
 	case int, int64, uint64:
