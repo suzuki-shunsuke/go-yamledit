@@ -49,11 +49,16 @@ func (a *EditMapValueAction) Run(m *ast.MappingNode) error {
 }
 
 func (a *EditMapValueAction) editKey(keyValue *ast.MappingValueNode, newKey any) error {
+	oldToken := keyValue.Key.GetToken()
 	comment := keyValue.Key.GetComment()
 	v, err := yaml.ValueToNode(newKey)
 	if err != nil {
 		return err
 	}
+	// Preserve the original token's position so that indentation is maintained
+	// when the AST is serialized back to a string.
+	newToken := v.GetToken()
+	newToken.Position = oldToken.Position
 	if err := v.SetComment(comment); err != nil {
 		return fmt.Errorf("set comment to new key: %w", err)
 	}

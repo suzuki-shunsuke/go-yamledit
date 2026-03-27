@@ -85,7 +85,7 @@ age: 10
 `,
 			action: mag.Map("$.foo", mag.RenameKey("bar", "bar2")),
 			want: `foo:
-bar2: 1
+  bar2: 1
   baz: 2
 `,
 		},
