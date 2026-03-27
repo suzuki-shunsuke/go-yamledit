@@ -21,10 +21,14 @@ func BytesToNode(b []byte) (ast.Node, error) {
 	return file.Docs[0].Body, nil
 }
 
+// YAML converts yaml bytes to a YAMLBytes struct.
+// This is useful to pass YAML strings to functions without temporary variables and error handling.
 func YAML(b []byte) *YAMLBytes {
 	return &YAMLBytes{b: b}
 }
 
+// YAMLBytes holds a YAML document.
+// This is converted to ast.Node internally.
 type YAMLBytes struct {
 	b []byte
 }

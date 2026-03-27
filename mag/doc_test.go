@@ -22,11 +22,6 @@ children:
 	type Child struct {
 		Name string
 	}
-	type Parent struct {
-		Name     string
-		Age      int
-		Children []Child
-	}
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
 	if err != nil {

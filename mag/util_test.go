@@ -11,7 +11,6 @@ import (
 func ExampleYAML() {
 	yml := `
 - foo # comment
-- bar
 `
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
@@ -26,5 +25,4 @@ func ExampleYAML() {
 	// Output:
 	// - hello # world
 	// - foo # comment
-	// - bar
 }

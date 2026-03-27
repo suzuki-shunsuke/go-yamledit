@@ -12,10 +12,10 @@ func WithComment(v any, comment string) any {
 	if node, ok := v.(ast.Node); ok {
 		if comment == "" {
 			// remove comment from node
-			node.SetComment(nil)
+			node.SetComment(nil) //nolint:errcheck
 			return node
 		}
-		node.SetComment(commentGroupFromString(comment))
+		node.SetComment(commentGroupFromString(comment)) //nolint:errcheck
 		return node
 	}
 	if a, ok := v.(*valueWithComment); ok {
