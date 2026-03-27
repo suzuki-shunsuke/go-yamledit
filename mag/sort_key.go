@@ -1,0 +1,40 @@
+package mag
+
+import (
+	"slices"
+
+	"github.com/goccy/go-yaml/ast"
+)
+
+type SortKeyFunc func(a, b *KeyValue) int
+
+// SortKey returns a MapAction removing given keys from a map.
+func SortKey(fn SortKeyFunc) MapAction {
+	return &EditMapAction{
+		Edit: func(m *MapValue, _ func(any) error) ([]Change, error) {
+			kvs := make([]*KeyValue, len(m.KeyValues))
+			copy(kvs, m.KeyValues)
+			slices.SortStableFunc(kvs, fn)
+			values := make([]*ast.MappingValueNode, len(m.KeyValues))
+			for i, item := range kvs {
+				values[i] = item.Node
+			}
+			return []Change{
+				&ChangeSortKey{
+					Node:   m.Node,
+					Values: values,
+				},
+			}, nil
+		},
+	}
+}
+
+type ChangeSortKey struct {
+	Node   *ast.MappingNode
+	Values []*ast.MappingValueNode
+}
+
+func (a *ChangeSortKey) Run() error {
+	a.Node.Values = a.Values
+	return nil
+}
