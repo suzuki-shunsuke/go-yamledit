@@ -17,7 +17,7 @@ func ExampleNewBytes() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List("$", mag.AddValuesToList(0, mag.NewBytes([]byte("hello # world"))))
+	act := mag.ListAction("$", mag.AddValuesToList(0, mag.NewBytes([]byte("hello # world"))))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}

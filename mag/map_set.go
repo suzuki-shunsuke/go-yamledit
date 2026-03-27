@@ -12,9 +12,9 @@ import (
 // SetKey returns a MapAction setting given key and value.
 // SetKeyOption changes the behavior of SetKey.
 // If SetKeyOption is nil, the new key-value pair will be appended to the end of the map, and if the key exists the value will be updated.
-func SetKey(key, value any, opt *SetKeyOption) MapAction {
+func SetKey(key, value any, opt *SetKeyOption) MappingNodeAction {
 	return &editMapAction[any, any]{
-		Edit: func(m *MapValue[any, any]) error {
+		Edit: func(m *Map[any, any]) error {
 			node, ok := m.Map[key]
 			if !ok {
 				if opt.GetIgnoreIfKeyNotExist() {

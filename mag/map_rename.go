@@ -23,9 +23,9 @@ const (
 
 // RenameKey returns a MapAction renaming given keys from a map.
 // whenDuplicate specifies the behavior when the new key already exists.
-func RenameKey(key, newKey any, whenDuplicate WhenDuplicateKey) MapAction {
+func RenameKey(key, newKey any, whenDuplicate WhenDuplicateKey) MappingNodeAction {
 	return &editMapAction[any, any]{
-		Edit: func(m *MapValue[any, any]) error {
+		Edit: func(m *Map[any, any]) error {
 			kv, ok := m.Map[key]
 			if !ok {
 				return nil

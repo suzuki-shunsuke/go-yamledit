@@ -19,7 +19,7 @@ age: 10 # keep comment
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.Map(
+	act := mag.MapAction(
 		"$",
 		mag.RemoveKeys(
 			"name",
@@ -49,7 +49,7 @@ func TestRemoveKeys(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.RemoveKeys("name")),
+			action: mag.MapAction("$", mag.RemoveKeys("name")),
 			want: `age: 10
 `,
 		},
@@ -57,7 +57,7 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.RemoveKeys("missing")),
+			action: mag.MapAction("$", mag.RemoveKeys("missing")),
 			want: `name: foo
 `,
 		},
@@ -67,7 +67,7 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.Map("$.foo", mag.RemoveKeys("bar")),
+			action: mag.MapAction("$.foo", mag.RemoveKeys("bar")),
 			want: `foo:
   baz: 2
 `,
@@ -80,7 +80,7 @@ age: 10
 - name: b
   val: 2
 `,
-			action: mag.Map("$.items", mag.RemoveKeys("name")),
+			action: mag.MapAction("$.items", mag.RemoveKeys("name")),
 			want: `items:
 - val: 1
 - val: 2
@@ -90,7 +90,7 @@ age: 10
 			name: "invalid yaml path",
 			yml: `name: foo
 `,
-			action:  mag.Map("invalid[", mag.RemoveKeys("name")),
+			action:  mag.MapAction("invalid[", mag.RemoveKeys("name")),
 			wantErr: true,
 		},
 	}

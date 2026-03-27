@@ -19,7 +19,7 @@ age: 10
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.Map(
+	act := mag.MapAction(
 		"$",
 		// Edit name to "ryan"
 		mag.SetKey("name", "ryan", nil),
@@ -59,7 +59,7 @@ func TestSetKey(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", nil)),
+			action: mag.MapAction("$", mag.SetKey("name", "bar", nil)),
 			want: `name: bar
 age: 10
 `,
@@ -68,7 +68,7 @@ age: 10
 			name: "add new key append",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.SetKey("age", 10, nil)),
+			action: mag.MapAction("$", mag.SetKey("age", 10, nil)),
 			want: `name: foo
 age: 10
 `,
@@ -77,7 +77,7 @@ age: 10
 			name: "ignore if key not exist",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.SetKey("age", 10, &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("age", 10, &mag.SetKeyOption{
 				IgnoreIfKeyNotExist: true,
 			})),
 			want: `name: foo
@@ -87,7 +87,7 @@ age: 10
 			name: "ignore if key exist",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
 				IgnoreIfKeyExist: true,
 			})),
 			want: `name: foo
@@ -98,7 +98,7 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
 				InsertLocations: []*mag.InsertLocation{
 					{First: true},
 				},
@@ -113,7 +113,7 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
 				InsertLocations: []*mag.InsertLocation{
 					{BeforeKey: "age"},
 				},
@@ -128,7 +128,7 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
 				InsertLocations: []*mag.InsertLocation{
 					{AfterKey: "name"},
 				},
@@ -143,7 +143,7 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("gender", "male", &mag.SetKeyOption{
 				InsertLocations: []*mag.InsertLocation{
 					{BeforeKey: "missing"},
 				},
@@ -158,7 +158,7 @@ gender: male
 			yml: `name: foo # important
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", nil)),
+			action: mag.MapAction("$", mag.SetKey("name", "bar", nil)),
 			want: `name: bar # important
 age: 10
 `,
@@ -169,7 +169,7 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.Map("$.foo", mag.SetKey("bar", 99, nil)),
+			action: mag.MapAction("$.foo", mag.SetKey("bar", 99, nil)),
 			want: `foo:
   bar: 99
   baz: 2
@@ -180,7 +180,7 @@ age: 10
 			yml: `name: foo # important
 age: 10
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
 				ClearComment: true,
 			})),
 			want: `name: bar
@@ -191,7 +191,7 @@ age: 10
 			name: "clear comment false preserves comment",
 			yml: `name: foo # important
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
 				ClearComment: false,
 			})),
 			want: `name: bar # important
@@ -201,7 +201,7 @@ age: 10
 			name: "clear comment on value without comment",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+			action: mag.MapAction("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
 				ClearComment: true,
 			})),
 			want: `name: bar
@@ -210,7 +210,7 @@ age: 10
 		{
 			name:    "invalid yaml path",
 			yml:     `name: foo`,
-			action:  mag.Map("invalid[", mag.SetKey("name", "bar", nil)),
+			action:  mag.MapAction("invalid[", mag.SetKey("name", "bar", nil)),
 			wantErr: true,
 		},
 	}

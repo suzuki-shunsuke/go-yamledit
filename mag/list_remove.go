@@ -10,9 +10,9 @@ import (
 type SelectValue[T any] func(value *Node[T]) (bool, error)
 
 // RemoveValuesFromList returns a ListAction removing items selected by the given function.
-func RemoveValuesFromList[T any](remove SelectValue[T]) ListAction {
+func RemoveValuesFromList[T any](remove SelectValue[T]) SequenceNodeAction {
 	return &editListAction[T]{
-		Edit: func(m *ListValue[T]) error {
+		Edit: func(m *List[T]) error {
 			indexes := make([]int, 0, len(m.List))
 			for i, node := range m.List {
 				f, err := remove(node)

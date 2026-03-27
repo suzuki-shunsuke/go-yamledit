@@ -8,16 +8,17 @@ import (
 )
 
 // NewEditList creates a new ListAction that applies the given edit function to a list.
-func NewEditList[T any](edit EditList[T]) ListAction {
+func NewEditList[T any](edit EditList[T]) SequenceNodeAction {
 	return &editListAction[T]{
 		Edit: edit,
 	}
 }
 
 // EditList returns changes to be applied to a list.
-type EditList[T any] func(m *ListValue[T]) error
+type EditList[T any] func(m *List[T]) error
 
-type ListValue[T any] struct { // TODO Rename
+// List represents a list.
+type List[T any] struct {
 	List []*Node[T]
 	Node *ast.SequenceNode
 }
@@ -31,7 +32,7 @@ func (a *editListAction[T]) Run(seq *ast.SequenceNode) error {
 	if a.Edit == nil {
 		return errors.New("edit function is nil")
 	}
-	mv := &ListValue[T]{
+	mv := &List[T]{
 		List: make([]*Node[T], len(seq.Values)),
 		Node: seq,
 	}

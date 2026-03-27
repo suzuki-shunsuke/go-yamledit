@@ -17,7 +17,7 @@ func ExampleWithComment() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List(
+	act := mag.ListAction(
 		"$",
 		// Add "zoo" with comment
 		mag.AddValuesToList(1, mag.WithComment("zoo", " comment is added")),

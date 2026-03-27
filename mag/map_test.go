@@ -20,7 +20,7 @@ age: 8
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		mag.Map(
+		mag.MapAction(
 			"$",
 			// Edit name to "ryan"
 			mag.SetKey("name", "ryan", nil),

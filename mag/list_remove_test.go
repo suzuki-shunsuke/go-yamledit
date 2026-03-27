@@ -19,7 +19,7 @@ children:
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List(
+	act := mag.ListAction(
 		"$.children",
 		// Remove foo
 		mag.RemoveValuesFromList[string](func(value *mag.Node[string]) (bool, error) {

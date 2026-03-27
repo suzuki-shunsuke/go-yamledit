@@ -34,7 +34,7 @@ job: engineer
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.Map(
+	act := mag.MapAction(
 		"$",
 		mag.SortKey(func(a, b *mag.KeyValue[string]) int {
 			if a.Key == b.Key {
@@ -72,7 +72,7 @@ func TestSortKey(t *testing.T) {
 age: 10
 job: engineer
 `,
-			action: mag.Map("$", mag.SortKey(ascKeyFunc)),
+			action: mag.MapAction("$", mag.SortKey(ascKeyFunc)),
 			want: `age: 10
 job: engineer
 name: foo
@@ -84,7 +84,7 @@ name: foo
 job: engineer
 name: foo
 `,
-			action: mag.Map("$", mag.SortKey(ascKeyFunc)),
+			action: mag.MapAction("$", mag.SortKey(ascKeyFunc)),
 			want: `age: 10
 job: engineer
 name: foo
@@ -96,7 +96,7 @@ name: foo
 job: engineer
 name: foo
 `,
-			action: mag.Map("$", mag.SortKey(descKeyFunc)),
+			action: mag.MapAction("$", mag.SortKey(descKeyFunc)),
 			want: `name: foo
 job: engineer
 age: 10
@@ -106,7 +106,7 @@ age: 10
 			name: "single key",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.SortKey(ascKeyFunc)),
+			action: mag.MapAction("$", mag.SortKey(ascKeyFunc)),
 			want: `name: foo
 `,
 		},
@@ -115,7 +115,7 @@ age: 10
 			yml: `name: foo # comment1
 age: 10 # comment2
 `,
-			action: mag.Map("$", mag.SortKey(ascKeyFunc)),
+			action: mag.MapAction("$", mag.SortKey(ascKeyFunc)),
 			want: `age: 10 # comment2
 name: foo # comment1
 `,
@@ -127,7 +127,7 @@ name: foo # comment1
   a: 1
   b: 2
 `,
-			action: mag.Map("$.foo", mag.SortKey(ascKeyFunc)),
+			action: mag.MapAction("$.foo", mag.SortKey(ascKeyFunc)),
 			want: `foo:
   a: 1
   b: 2
@@ -137,7 +137,7 @@ name: foo # comment1
 		{
 			name:    "invalid yaml path",
 			yml:     `name: foo`,
-			action:  mag.Map("invalid[", mag.SortKey(ascKeyFunc)),
+			action:  mag.MapAction("invalid[", mag.SortKey(ascKeyFunc)),
 			wantErr: true,
 		},
 	}

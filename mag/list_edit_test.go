@@ -18,10 +18,10 @@ func ExampleNewEditList() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List(
+	act := mag.ListAction(
 		"$",
 		mag.NewEditList[string](
-			func(m *mag.ListValue[string]) error {
+			func(m *mag.List[string]) error {
 				return mag.RemoveValuesFromSequenceNode(m.Node, 0)
 			},
 		),

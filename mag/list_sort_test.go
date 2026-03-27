@@ -21,7 +21,7 @@ func ExampleSortList() {
 		log.Fatal(err)
 	}
 
-	act := mag.List(
+	act := mag.ListAction(
 		"$",
 		mag.SortList[string](func(a, b *mag.Node[string]) int {
 			return strings.Compare(a.Value, b.Value)
@@ -51,7 +51,7 @@ func TestSortList(t *testing.T) {
 - apple
 - banana
 `,
-			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `- apple
@@ -65,7 +65,7 @@ func TestSortList(t *testing.T) {
 - b
 - c
 `,
-			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `- a
@@ -79,7 +79,7 @@ func TestSortList(t *testing.T) {
 - b
 - c
 `,
-			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(b.Value, a.Value)
 			})),
 			want: `- c
@@ -93,7 +93,7 @@ func TestSortList(t *testing.T) {
 - apple # first
 - banana # second
 `,
-			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `- apple # first
@@ -109,7 +109,7 @@ func TestSortList(t *testing.T) {
   - a
   - b
 `,
-			action: mag.List("$.foo.items", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$.foo.items", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `foo:
@@ -129,7 +129,7 @@ func TestSortList(t *testing.T) {
   - x
   - y
 `,
-			action: mag.List("$.items[*]", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$.items[*]", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `items:
@@ -145,7 +145,7 @@ func TestSortList(t *testing.T) {
 			name: "single element",
 			yml: `- only
 `,
-			action: mag.List("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("$", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			want: `- only
@@ -155,7 +155,7 @@ func TestSortList(t *testing.T) {
 			name: "invalid yaml path",
 			yml: `- a
 `,
-			action: mag.List("invalid[", mag.SortList[string](func(a, b *mag.Node[string]) int {
+			action: mag.ListAction("invalid[", mag.SortList[string](func(a, b *mag.Node[string]) int {
 				return strings.Compare(a.Value, b.Value)
 			})),
 			wantErr: true,
@@ -201,7 +201,7 @@ func TestSortListAction_Run_uint64(t *testing.T) {
 - 1
 - 2
 `,
-			action: mag.List("$", mag.SortList[uint64](func(a, b *mag.Node[uint64]) int {
+			action: mag.ListAction("$", mag.SortList[uint64](func(a, b *mag.Node[uint64]) int {
 				aInt := a.Value
 				bInt := b.Value
 				if aInt < bInt {

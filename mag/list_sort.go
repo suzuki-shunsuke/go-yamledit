@@ -18,9 +18,9 @@ type Node[T any] struct {
 
 type SortFunc[T any] func(a, b *Node[T]) int
 
-func SortList[T any](fn SortFunc[T]) ListAction {
+func SortList[T any](fn SortFunc[T]) SequenceNodeAction {
 	return &editListAction[T]{
-		Edit: func(m *ListValue[T]) error {
+		Edit: func(m *List[T]) error {
 			if fn == nil {
 				return errors.New("sort function is nil")
 			}

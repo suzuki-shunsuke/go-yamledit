@@ -8,19 +8,19 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// Map returns Action editing maps.
+// MapAction returns Action editing maps.
 // yamlPath is a path to edited maps.
 // e.g. "$.reviewer"
 // https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
-func Map(yamlPath string, actions ...MapAction) Action {
+func MapAction(yamlPath string, actions ...MappingNodeAction) Action {
 	return &mapActions{
 		YAMLPath: yamlPath,
 		Actions:  actions,
 	}
 }
 
-// MapAction represents an action editing a map.
-type MapAction interface {
+// MappingNodeAction represents an action editing a map.
+type MappingNodeAction interface {
 	Run(m *ast.MappingNode) error
 }
 
@@ -29,7 +29,7 @@ type mapActions struct {
 	// e.g. "$.reviewer"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Actions  []MapAction
+	Actions  []MappingNodeAction
 }
 
 func (a *mapActions) Run(node ast.Node) error {

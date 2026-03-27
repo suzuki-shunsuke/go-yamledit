@@ -8,19 +8,19 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// List returns Action editing lists.
+// ListAction returns Action editing lists.
 // yamlPath is a path to edited lists.
 // e.g. "$.reviewers"
 // https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
-func List(yamlPath string, actions ...ListAction) Action {
+func ListAction(yamlPath string, actions ...SequenceNodeAction) Action {
 	return &listActions{
 		YAMLPath: yamlPath,
 		Actions:  actions,
 	}
 }
 
-// ListAction represents an action editing a list.
-type ListAction interface {
+// SequenceNodeAction represents an action editing a list.
+type SequenceNodeAction interface {
 	Run(seq *ast.SequenceNode) error
 }
 
@@ -29,7 +29,7 @@ type listActions struct {
 	// e.g. "$.reviewers"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Actions  []ListAction
+	Actions  []SequenceNodeAction
 }
 
 // Run edits lists.

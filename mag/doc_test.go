@@ -28,7 +28,7 @@ children:
 		log.Fatal(err)
 	}
 	actions := []mag.Action{
-		mag.Map(
+		mag.MapAction(
 			"$",
 			// Edit name to "ryan"
 			mag.SetKey("name", "ryan", nil),
@@ -45,7 +45,7 @@ children:
 				},
 			}),
 		),
-		mag.List(
+		mag.ListAction(
 			"$.children",
 			// Remove child whose name is "adam
 			mag.RemoveValuesFromList[Child](func(value *mag.Node[Child]) (bool, error) {

@@ -8,9 +8,9 @@ import (
 )
 
 // AddValuesToList returns an AddListItem adding the given value at the given index.
-func AddValuesToList(idx int, values ...any) ListAction {
+func AddValuesToList(idx int, values ...any) SequenceNodeAction {
 	return &editListAction[any]{
-		Edit: func(m *ListValue[any]) error {
+		Edit: func(m *List[any]) error {
 			return AddValuesToSequenceNode(m.Node, idx, values...)
 		},
 	}

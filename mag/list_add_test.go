@@ -18,7 +18,7 @@ func ExampleAddValuesToList() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List("$", mag.AddValuesToList(0, "zoo"))
+	act := mag.ListAction("$", mag.AddValuesToList(0, "zoo"))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func ExampleAddValuesToList_negative_index() {
 		log.Fatal(err)
 	}
 	// Add "zoo" to the last position
-	act := mag.List("$", mag.AddValuesToList(-1, "zoo"))
+	act := mag.ListAction("$", mag.AddValuesToList(-1, "zoo"))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
