@@ -70,8 +70,10 @@ children:
 		),
 		mag.List(
 			"$.children",
-			// Remove child whose index is 1
-			mag.RemoveListItemsByIndex(1),
+			// Remove child whose name is "adam
+			mag.RemoveItemsFromList[Child](func(value *mag.Node[Child]) (bool, error) {
+				return value.Value.Name == "adam", nil
+			}),
 			// Add a child at index 0
 			mag.AddValueToList(map[string]any{"name": "jessica"}, 0),
 			// Sort children by name

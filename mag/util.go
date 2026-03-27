@@ -1,6 +1,7 @@
 package mag
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -103,4 +104,29 @@ func valueToNode(value any) (ast.Node, error) {
 		return nil, err
 	}
 	return v, nil
+}
+
+func normalizeIndexes(indexes []int, size int) error {
+	for i, idx := range indexes {
+		newIdx, err := checkIndex(idx, size)
+		if err != nil {
+			return err
+		}
+		indexes[i] = newIdx
+	}
+	return nil
+}
+
+func checkIndex(idx, size int) (int, error) {
+	if idx >= size {
+		return 0, errors.New("index is larger than the size of the list")
+	}
+	if idx >= 0 {
+		return idx, nil
+	}
+	newIdx := size + idx
+	if newIdx < 0 {
+		return 0, errors.New("the negative index is smaller than the size of the list")
+	}
+	return newIdx, nil
 }

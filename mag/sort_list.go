@@ -25,6 +25,10 @@ type Node[T any] struct {
 	Comment string
 }
 
+func (n *Node[T]) Unmarshal(v any) error {
+	return yaml.NodeToValue(n.Node, v)
+}
+
 type sortListAction[T any] struct {
 	Sort SortFunc[T]
 }

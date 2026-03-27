@@ -1,7 +1,6 @@
 package mag
 
 import (
-	"errors"
 	"slices"
 
 	"github.com/goccy/go-yaml/ast"
@@ -9,46 +8,48 @@ import (
 
 // SelectItemsFromList returns indexes of items to be removed.
 // If indexes is nil or empty, no item will be removed.
-type SelectItemsFromList func(seq *ast.SequenceNode) ([]int, error)
+type SelectItemFromList[T any] func(value *Node[T]) (bool, error)
 
-// RemoveListItemsByIndex returns a ListAction removing items at the given indexes.
-func RemoveListItemsByIndex(indexes ...int) ListAction {
-	return &removeListItemAction{
-		Remove: func(_ *ast.SequenceNode) ([]int, error) {
-			return indexes, nil
+// RemoveItemsFromList returns a ListAction removing items selected by the given function.
+func RemoveItemsFromList[T any](remove SelectItemFromList[T]) ListAction {
+	return &EditListAction[T]{
+		Edit: func(m *ListValue[T], _ func(any) error) ([]Change, error) {
+			indexes := make([]int, 0, len(m.List))
+			for i, node := range m.List {
+				f, err := remove(node)
+				if err != nil {
+					return nil, err
+				}
+				if f {
+					indexes = append(indexes, i)
+				}
+			}
+			return []Change{
+				&ChangeRemoveItemFromList{
+					Node:    m.Node,
+					Indexes: indexes,
+				},
+			}, nil
 		},
 	}
 }
 
-// RemoveItemsFromList returns a ListAction removing items selected by the given function.
-func RemoveItemsFromList(remove SelectItemsFromList) ListAction {
-	return &removeListItemAction{
-		Remove: remove,
-	}
+type ChangeRemoveItemFromList struct {
+	Node    *ast.SequenceNode
+	Indexes []int
 }
 
-type removeListItemAction struct {
-	Remove SelectItemsFromList
-}
-
-func (a *removeListItemAction) Run(seq *ast.SequenceNode) error {
-	if a.Remove == nil {
-		return errors.New("remove is not set")
-	}
-	indexes, err := a.Remove(seq)
-	if err != nil {
+func (a *ChangeRemoveItemFromList) Run() error {
+	values := make([]ast.Node, 0, len(a.Node.Values)-len(a.Indexes))
+	if err := normalizeIndexes(a.Indexes, len(a.Node.Values)); err != nil {
 		return err
 	}
-	if len(indexes) == 0 {
-		return nil
-	}
-	values := make([]ast.Node, 0, len(seq.Values)-len(indexes))
-	for i, value := range seq.Values {
-		if slices.Contains(indexes, i) {
+	for i, value := range a.Node.Values {
+		if slices.Contains(a.Indexes, i) {
 			continue
 		}
 		values = append(values, value)
 	}
-	seq.Values = values
+	a.Node.Values = values
 	return nil
 }
