@@ -3,20 +3,16 @@ package mag_test
 import (
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func Example() {
+func ExampleMap() {
 	yml := `
 name: jack # comment is kept
 work: engineer
 age: 8
-children:
-  - name: david
-  - name: adam
 `
 
 	type Child struct {
@@ -50,21 +46,6 @@ children:
 				},
 			}),
 		),
-		mag.List(
-			"$.children",
-			// Remove child whose name is "adam
-			mag.RemoveItemsFromList[Child](func(value *mag.Node[Child]) (bool, error) {
-				return value.Value.Name == "adam", nil
-			}),
-			// Add a child at index 0
-			mag.AddValuesToList(0, Child{
-				Name: "jessica",
-			}),
-			// Sort children by name
-			mag.SortList[Child](func(a, b *mag.Node[Child]) int {
-				return strings.Compare(a.Value.Name, b.Value.Name)
-			}),
-		),
 	}
 	for _, act := range actions {
 		if err := act.Run(file.Docs[0].Body); err != nil {
@@ -76,7 +57,4 @@ children:
 	// name: ryan # comment is kept
 	// gender: male
 	// job: engineer
-	// children:
-	//   - name: david
-	//   - name: jessica
 }

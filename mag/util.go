@@ -21,6 +21,14 @@ func BytesToNode(b []byte) (ast.Node, error) {
 	return file.Docs[0].Body, nil
 }
 
+func YAML(b []byte) *YAMLBytes {
+	return &YAMLBytes{b: b}
+}
+
+type YAMLBytes struct {
+	b []byte
+}
+
 type noop struct{}
 
 // NoChange is a sentinel value that indicates no change should be made against mapping key or value.
@@ -101,6 +109,9 @@ func getDepthByPath(yamlPath string) int { //nolint:cyclop
 func valueToNode(value any) (ast.Node, error) {
 	if node, ok := value.(ast.Node); ok {
 		return node, nil
+	}
+	if b, ok := value.(*YAMLBytes); ok {
+		return BytesToNode(b.b)
 	}
 	valWithComment := toValueWithComment(value)
 	v, err := yaml.ValueToNode(valWithComment.Value)
