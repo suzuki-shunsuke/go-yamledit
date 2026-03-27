@@ -6,38 +6,41 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// RemoveItemsFromMap returns a MapAction removing items from a map.
-func RemoveItemsFromMap(match MatchMappingValue) MapAction {
-	return &removeKeyAction{
-		Match: match,
-	}
-}
-
 // RemoveKeys returns a MapAction removing given keys from a map.
 func RemoveKeys(keys ...any) MapAction {
-	return &removeKeyAction{
-		Match: MatchMappingValueByKey(keys...),
+	return &EditMapAction{
+		Edit: func(m *MapValue, _ func(any) error) ([]Change, error) {
+			indexes := make([]int, 0, len(keys))
+			for _, key := range keys {
+				kv, ok := m.Map[key]
+				if !ok {
+					continue
+				}
+				indexes = append(indexes, kv.Index)
+			}
+			return []Change{
+				&ChangeRemoveKeys{
+					Indexes: indexes,
+					Node:    m.Node,
+				},
+			}, nil
+		},
 	}
 }
 
-type removeKeyAction struct {
-	Match MatchMappingValue
+type ChangeRemoveKeys struct {
+	Node    *ast.MappingNode
+	Indexes []int
 }
 
-func (a *removeKeyAction) Run(m *ast.MappingNode) error {
-	idx := 0
-	mapIter := m.MapRange()
-	for mapIter.Next() {
-		f, err := a.Match(mapIter.KeyValue())
-		if err != nil {
-			return err
-		}
-		if !f {
-			idx++
+func (a *ChangeRemoveKeys) Run() error {
+	values := make([]*ast.MappingValueNode, 0, len(a.Node.Values)-len(a.Indexes))
+	for i, v := range a.Node.Values {
+		if slices.Contains(a.Indexes, i) {
 			continue
 		}
-		m.Values = slices.Delete(m.Values, idx, idx+1)
-		return nil
+		values = append(values, v)
 	}
+	a.Node.Values = values
 	return nil
 }
