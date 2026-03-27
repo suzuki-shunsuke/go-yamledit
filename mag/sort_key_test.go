@@ -9,18 +9,17 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ascKeyFunc(a, b *mag.KeyValue) int {
-	ak, bk := a.Key.(string), b.Key.(string)
-	if ak < bk {
+func ascKeyFunc(a, b *mag.KeyValue[string]) int {
+	if a.Key < b.Key {
 		return -1
 	}
-	if ak > bk {
+	if a.Key > b.Key {
 		return 1
 	}
 	return 0
 }
 
-func descKeyFunc(a, b *mag.KeyValue) int {
+func descKeyFunc(a, b *mag.KeyValue[string]) int {
 	return -ascKeyFunc(a, b)
 }
 
@@ -37,11 +36,11 @@ job: engineer
 	}
 	act := mag.Map(
 		"$",
-		mag.SortKey(func(a, b *mag.KeyValue) int {
+		mag.SortKey(func(a, b *mag.KeyValue[string]) int {
 			if a.Key == b.Key {
 				return 0
 			}
-			if a.Key.(string) < b.Key.(string) {
+			if a.Key < b.Key {
 				return -1
 			}
 			return 1

@@ -22,11 +22,11 @@ type: yoo # keep comment 3
 	act := &mag.MapActions{
 		YAMLPath: "$",
 		Actions: []mag.MapAction{
-			&mag.EditMapAction{
+			&mag.EditMapAction[string]{
 				// Change the value of the "name" key to "new name"
 				// Match: mag.MatchMappingValueByKey("name"),
 				// Edit:  mag.EditMappingValueStatic(mag.NoChange, "new name"),
-				Edit: func(m *mag.MapValue, _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil, nil
@@ -39,9 +39,9 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction{
+			&mag.EditMapAction[string]{
 				// If the given key does not exist, do nothing
-				Edit: func(m *mag.MapValue, _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["password"]
 					if !ok {
 						return nil, nil
@@ -54,11 +54,11 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction{
+			&mag.EditMapAction[string]{
 				// Rename the "age" key to "age-2"
 				// Match: mag.MatchMappingValueByKey("age"),
 				// Edit:  mag.EditMappingValueStatic("age-2", mag.NoChange),
-				Edit: func(m *mag.MapValue, _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["age"]
 					if !ok {
 						return nil, nil
@@ -71,13 +71,13 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction{
+			&mag.EditMapAction[string]{
 				// Change both key and value
 				// key: type => type-2
 				// value yoo => yoo-2
 				// Match: mag.MatchMappingValueByKey("type"),
 				// Edit:  mag.EditMappingValueStatic("type-2", "yoo-2"),
-				Edit: func(m *mag.MapValue, _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["type"]
 					if !ok {
 						return nil, nil

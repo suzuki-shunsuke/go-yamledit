@@ -6,13 +6,13 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type SortKeyFunc func(a, b *KeyValue) int
+type SortKeyFunc[T comparable] func(a, b *KeyValue[T]) int
 
-// SortKey returns a MapAction removing given keys from a map.
-func SortKey(fn SortKeyFunc) MapAction {
-	return &EditMapAction{
-		Edit: func(m *MapValue, _ func(any) error) ([]Change, error) {
-			kvs := make([]*KeyValue, len(m.KeyValues))
+// SortKey returns a MapAction sorting keys by the given function.
+func SortKey[T comparable](fn SortKeyFunc[T]) MapAction {
+	return &EditMapAction[T]{
+		Edit: func(m *MapValue[T], _ func(any) error) ([]Change, error) {
+			kvs := make([]*KeyValue[T], len(m.KeyValues))
 			copy(kvs, m.KeyValues)
 			slices.SortStableFunc(kvs, fn)
 			values := make([]*ast.MappingValueNode, len(m.KeyValues))

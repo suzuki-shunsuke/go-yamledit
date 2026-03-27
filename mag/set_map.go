@@ -22,8 +22,8 @@ import (
 // SetKeyOption changes the behavior of SetKey.
 // If SetKeyOption is nil, the new key-value pair will be appended to the end of the map, and if the key exists the value will be updated.
 func SetKey(key, value any, opt *SetKeyOption) MapAction {
-	return &EditMapAction{
-		Edit: func(m *MapValue, unmarshal func(any) error) ([]Change, error) {
+	return &EditMapAction[any]{
+		Edit: func(m *MapValue[any], unmarshal func(any) error) ([]Change, error) {
 			node, ok := m.Map[key]
 			if !ok {
 				if opt.GetIgnoreIfKeyNotExist() {
@@ -43,7 +43,7 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 						return changes, nil
 					}
 					if location.BeforeKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue) bool {
+						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
 							return compareKey(location.BeforeKey, v.Key)
 						})
 						if idx == -1 {
@@ -53,7 +53,7 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 						return changes, nil
 					}
 					if location.AfterKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue) bool {
+						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
 							return compareKey(location.AfterKey, v.Key)
 						})
 						if idx == -1 {
