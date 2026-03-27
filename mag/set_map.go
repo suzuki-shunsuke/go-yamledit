@@ -23,7 +23,7 @@ import (
 // If SetKeyOption is nil, the new key-value pair will be appended to the end of the map, and if the key exists the value will be updated.
 func SetKey(key, value any, opt *SetKeyOption) MapAction {
 	return &EditMapAction[any, any]{
-		Edit: func(m *MapValue[any, any], unmarshal func(any) error) ([]Change, error) {
+		Edit: func(m *MapValue[any, any]) ([]Change, error) {
 			node, ok := m.Map[key]
 			if !ok {
 				if opt.GetIgnoreIfKeyNotExist() {

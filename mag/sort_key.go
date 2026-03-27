@@ -11,7 +11,7 @@ type SortKeyFunc[K comparable, V any] func(a, b *KeyValue[K, V]) int
 // SortKey returns a MapAction sorting keys by the given function.
 func SortKey[K comparable, V any](fn SortKeyFunc[K, V]) MapAction {
 	return &EditMapAction[K, V]{
-		Edit: func(m *MapValue[K, V], _ func(any) error) ([]Change, error) {
+		Edit: func(m *MapValue[K, V]) ([]Change, error) {
 			kvs := make([]*KeyValue[K, V], len(m.KeyValues))
 			copy(kvs, m.KeyValues)
 			slices.SortStableFunc(kvs, fn)

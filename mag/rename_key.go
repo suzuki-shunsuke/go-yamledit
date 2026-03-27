@@ -11,7 +11,7 @@ import (
 // RenameKey returns a MapAction renaming given keys from a map.
 func RenameKey(key, newKey any) MapAction {
 	return &EditMapAction[any, any]{
-		Edit: func(m *MapValue[any, any], _ func(any) error) ([]Change, error) {
+		Edit: func(m *MapValue[any, any]) ([]Change, error) {
 			kv, ok := m.Map[key]
 			if !ok {
 				return nil, nil

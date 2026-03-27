@@ -50,11 +50,7 @@ children:
 				},
 			}),
 			&mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any], unmarshal func(any) error) ([]mag.Change, error) {
-					p := Parent{}
-					if err := unmarshal(&p); err != nil {
-						return nil, err
-					}
+				Edit: func(m *mag.MapValue[string, any]) ([]mag.Change, error) {
 					mv, ok := m.Map["name"]
 					if !ok {
 						return nil, nil

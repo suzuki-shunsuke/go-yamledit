@@ -24,7 +24,7 @@ type EditMapAction[K comparable, V any] struct {
 	Edit EditMap[K, V]
 }
 
-type EditMap[K comparable, V any] func(m *MapValue[K, V], unmarshal func(any) error) ([]Change, error)
+type EditMap[K comparable, V any] func(m *MapValue[K, V]) ([]Change, error)
 
 type Change interface {
 	Run() error
@@ -60,9 +60,7 @@ func (a *EditMapAction[K, V]) Run(m *ast.MappingNode) error {
 		mv.KeyValues = append(mv.KeyValues, kv)
 		idx++
 	}
-	edits, err := a.Edit(mv, func(v any) error {
-		return yaml.NodeToValue(m, &v)
-	})
+	edits, err := a.Edit(mv)
 	if err != nil {
 		return err
 	}
