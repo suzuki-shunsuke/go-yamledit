@@ -6,11 +6,11 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// SelectItemFromList returns whether the item is selected.
-type SelectItemFromList[T any] func(value *Node[T]) (bool, error)
+// SelectValue returns whether the value is selected.
+type SelectValue[T any] func(value *Node[T]) (bool, error)
 
-// RemoveItemsFromList returns a ListAction removing items selected by the given function.
-func RemoveItemsFromList[T any](remove SelectItemFromList[T]) ListAction {
+// RemoveValuesFromList returns a ListAction removing items selected by the given function.
+func RemoveValuesFromList[T any](remove SelectValue[T]) ListAction {
 	return &editListAction[T]{
 		Edit: func(m *ListValue[T]) error {
 			indexes := make([]int, 0, len(m.List))
@@ -23,12 +23,12 @@ func RemoveItemsFromList[T any](remove SelectItemFromList[T]) ListAction {
 					indexes = append(indexes, i)
 				}
 			}
-			return RemoveItemsFromSequenceNode(m.Node, indexes...)
+			return RemoveValuesFromSequenceNode(m.Node, indexes...)
 		},
 	}
 }
 
-func RemoveItemsFromSequenceNode(node *ast.SequenceNode, indexes ...int) error {
+func RemoveValuesFromSequenceNode(node *ast.SequenceNode, indexes ...int) error {
 	values := make([]ast.Node, 0, len(node.Values)-len(indexes))
 	if err := normalizeIndexes(indexes, len(node.Values)); err != nil {
 		return err

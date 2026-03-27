@@ -8,11 +8,10 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleRemoveItemsFromList() {
+func ExampleNewEditList() {
 	yml := `
-children:
-  - foo # comment
-  - bar # comment 2
+- foo
+- bar # comment
 `
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
@@ -20,17 +19,17 @@ children:
 		log.Fatal(err)
 	}
 	act := mag.List(
-		"$.children",
-		// Remove foo
-		mag.RemoveItemsFromList[string](func(value *mag.Node[string]) (bool, error) {
-			return value.Value == "foo", nil
-		}),
+		"$",
+		mag.NewEditList[string](
+			func(m *mag.ListValue[string]) error {
+				return mag.RemoveValuesFromSequenceNode(m.Node, 0)
+			},
+		),
 	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
-	// children:
-	//   - bar # comment 2
+	// - bar # comment
 }

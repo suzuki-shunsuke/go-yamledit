@@ -8,7 +8,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleYAML() {
+func ExampleNewBytes() {
 	yml := `
 - foo # comment
 `

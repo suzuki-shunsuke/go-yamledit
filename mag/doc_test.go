@@ -48,7 +48,7 @@ children:
 		mag.List(
 			"$.children",
 			// Remove child whose name is "adam
-			mag.RemoveItemsFromList[Child](func(value *mag.Node[Child]) (bool, error) {
+			mag.RemoveValuesFromList[Child](func(value *mag.Node[Child]) (bool, error) {
 				return value.Value.Name == "adam", nil
 			}),
 			// Add a child at index 0
