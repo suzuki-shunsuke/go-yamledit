@@ -8,36 +8,24 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// AddListItemFunc is a function that returns the value and index to insert into a list.
-// If error is ErrNoop, no item will be added.
-type AddListItemFunc func(seq *ast.SequenceNode) (any, int, error)
-
 // AddValuesToList returns an AddListItem adding the given value at the given index.
 func AddValuesToList(idx int, values ...any) ListAction {
 	return &EditListAction[any]{
 		Edit: func(m *ListValue[any]) ([]Change, error) {
-			newIdx, err := checkInsertIndex(idx, len(m.List))
-			if err != nil {
-				return nil, err
-			}
-			nodes := make([]ast.Node, len(values))
-			for i, v := range values {
-				n, err := valueToNode(v)
-				if err != nil {
-					return nil, fmt.Errorf("convert value to node: %w", err)
-				}
-				nodes[i] = n
-			}
 			return []Change{
 				&ChangeAddItemsToList{
-					List:  m.Node,
-					Index: newIdx,
-					Nodes: nodes,
+					List:   m.Node,
+					Index:  idx,
+					Values: values,
 				},
 			}, nil
 		},
 	}
 }
+
+// AddListItemFunc is a function that returns the value and index to insert into a list.
+// If error is ErrNoop, no item will be added.
+type AddListItemFunc func(seq *ast.SequenceNode) (any, int, error)
 
 func AddListItemByFunc(fn AddListItemFunc) ListAction {
 	return &addListItemAction{
@@ -72,12 +60,24 @@ func (a *addListItemAction) Run(seq *ast.SequenceNode) error {
 }
 
 type ChangeAddItemsToList struct {
-	List  *ast.SequenceNode
-	Nodes []ast.Node
-	Index int
+	List   *ast.SequenceNode
+	Values []any
+	Index  int
 }
 
 func (a *ChangeAddItemsToList) Run() error {
-	a.List.Values = slices.Insert(a.List.Values, a.Index, a.Nodes...)
+	idx, err := checkInsertIndex(a.Index, len(a.List.Values))
+	if err != nil {
+		return err
+	}
+	nodes := make([]ast.Node, len(a.Values))
+	for i, v := range a.Values {
+		n, err := valueToNode(v)
+		if err != nil {
+			return fmt.Errorf("convert value to node: %w", err)
+		}
+		nodes[i] = n
+	}
+	a.List.Values = slices.Insert(a.List.Values, idx, nodes...)
 	return nil
 }
