@@ -9,7 +9,7 @@ import (
 // RemoveKeys returns a MapAction removing given keys from a map.
 func RemoveKeys(keys ...any) MapAction {
 	return &EditMapAction[any, any]{
-		Edit: func(m *MapValue[any, any]) ([]Change, error) {
+		Edit: func(m *MapValue[any, any]) error {
 			indexes := make([]int, 0, len(keys))
 			for _, key := range keys {
 				kv, ok := m.Map[key]
@@ -18,29 +18,19 @@ func RemoveKeys(keys ...any) MapAction {
 				}
 				indexes = append(indexes, kv.Index)
 			}
-			return []Change{
-				&ChangeRemoveKeys{
-					Indexes: indexes,
-					Node:    m.Node,
-				},
-			}, nil
+			return RemoveKeysFromMappingNode(m.Node, indexes...)
 		},
 	}
 }
 
-type ChangeRemoveKeys struct {
-	Node    *ast.MappingNode
-	Indexes []int
-}
-
-func (a *ChangeRemoveKeys) Run() error {
-	values := make([]*ast.MappingValueNode, 0, len(a.Node.Values)-len(a.Indexes))
-	for i, v := range a.Node.Values {
-		if slices.Contains(a.Indexes, i) {
+func RemoveKeysFromMappingNode(node *ast.MappingNode, indexes ...int) error {
+	values := make([]*ast.MappingValueNode, 0, len(node.Values)-len(indexes))
+	for i, v := range node.Values {
+		if slices.Contains(indexes, i) {
 			continue
 		}
 		values = append(values, v)
 	}
-	a.Node.Values = values
+	node.Values = values
 	return nil
 }

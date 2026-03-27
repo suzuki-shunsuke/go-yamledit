@@ -60,25 +60,16 @@ func getComment(node ast.Node) string {
 	return cn.String()
 }
 
-type ChangeRemoveComment struct {
-	Node ast.Node
-}
-
-func (a *ChangeRemoveComment) Run() error {
-	if err := a.Node.SetComment(nil); err != nil {
+func RemoveCommentFromNode(node ast.Node) error {
+	if err := node.SetComment(nil); err != nil {
 		return fmt.Errorf("remove comment: %w", err)
 	}
 	return nil
 }
 
-type ChangeSetComment struct {
-	Node    ast.Node
-	Comment string
-}
-
-func (a *ChangeSetComment) Run() error {
-	if err := a.Node.SetComment(commentGroupFromString(a.Comment)); err != nil {
-		return fmt.Errorf("set comment: %w", err)
+func SetCommentToNode(node ast.Node, comment string) error {
+	if comment == "" {
+		return RemoveCommentFromNode(node)
 	}
-	return nil
+	return node.SetComment(commentGroupFromString(comment))
 }

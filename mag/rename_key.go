@@ -11,48 +11,32 @@ import (
 // whenDuplicate specifies the behavior when the new key already exists.
 func RenameKey(key, newKey any, whenDuplicate WhenDuplicateKey) MapAction {
 	return &EditMapAction[any, any]{
-		Edit: func(m *MapValue[any, any]) ([]Change, error) {
+		Edit: func(m *MapValue[any, any]) error {
 			kv, ok := m.Map[key]
 			if !ok {
-				return nil, nil
+				return nil
 			}
 			if key == newKey {
-				return nil, nil
+				return nil
 			}
 			if existing, ok := m.Map[newKey]; ok {
 				switch whenDuplicate {
 				case Skip:
-					return nil, nil
+					return nil
 				case IgnoreExistingKey:
-					return []Change{
-						&ChangeRemoveKeys{
-							Indexes: []int{kv.Index},
-							Node:    m.Node,
-						},
-						&ChangeSetValue{
-							Node:  existing.Node,
-							Value: kv.Value,
-						},
-					}, nil
+					if err := RemoveKeysFromMappingNode(m.Node, kv.Index); err != nil {
+						return err
+					}
+					return SetValueToMappingValue(existing.Node, kv.Value, false)
 				case RemoveOldKey:
-					return []Change{
-						&ChangeRemoveKeys{
-							Indexes: []int{kv.Index},
-							Node:    m.Node,
-						},
-					}, nil
+					return RemoveKeysFromMappingNode(m.Node, kv.Index)
 				case RaiseError:
-					return nil, fmt.Errorf("key %v already exists", newKey)
+					return fmt.Errorf("key %v already exists", newKey)
 				default:
-					return nil, fmt.Errorf("unknown duplicate key behavior: %v", whenDuplicate)
+					return fmt.Errorf("unknown duplicate key behavior: %v", whenDuplicate)
 				}
 			}
-			return []Change{
-				&ChangeRenameKey{
-					Key:  newKey,
-					Node: kv.Node,
-				},
-			}, nil
+			return RenameKeyOfMappingValueNode(kv.Node, newKey)
 		},
 	}
 }
@@ -71,15 +55,11 @@ const (
 	RaiseError
 )
 
-type ChangeRenameKey struct {
-	Node *ast.MappingValueNode
-	Key  any
-}
-
-func (a *ChangeRenameKey) Run() error {
-	oldToken := a.Node.Key.GetToken()
-	comment := a.Node.Key.GetComment()
-	v, err := valueToNode(a.Key)
+// RenameKeyOfMappingValueNode renames the key of a mapping value node.
+func RenameKeyOfMappingValueNode(node *ast.MappingValueNode, newKey any) error {
+	oldToken := node.Key.GetToken()
+	comment := node.Key.GetComment()
+	v, err := valueToNode(newKey)
 	if err != nil {
 		return err
 	}
@@ -93,6 +73,6 @@ func (a *ChangeRenameKey) Run() error {
 	if !ok {
 		return errors.New("failed to convert value to map key node")
 	}
-	a.Node.Key = k
+	node.Key = k
 	return nil
 }

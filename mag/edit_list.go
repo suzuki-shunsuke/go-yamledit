@@ -19,7 +19,7 @@ func NewEditList[T any](edit EditList[T]) ListAction {
 }
 
 // EditList returns changes to be applied to a list.
-type EditList[T any] func(m *ListValue[T]) ([]Change, error)
+type EditList[T any] func(m *ListValue[T]) error
 
 type ListValue[T any] struct {
 	List []*Node[T]
@@ -47,14 +47,8 @@ func (a *editListAction[T]) Run(seq *ast.SequenceNode) error {
 		}
 	}
 
-	edits, err := a.Edit(mv)
-	if err != nil {
+	if err := a.Edit(mv); err != nil {
 		return err
-	}
-	for _, edit := range edits {
-		if err := edit.Run(); err != nil {
-			return err
-		}
 	}
 	return nil
 }

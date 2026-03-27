@@ -19,34 +19,24 @@ import (
 // If SetKeyOption is nil, the new key-value pair will be appended to the end of the map, and if the key exists the value will be updated.
 func SetKey(key, value any, opt *SetKeyOption) MapAction {
 	return &EditMapAction[any, any]{
-		Edit: func(m *MapValue[any, any]) ([]Change, error) {
+		Edit: func(m *MapValue[any, any]) error {
 			node, ok := m.Map[key]
 			if !ok {
 				if opt.GetIgnoreIfKeyNotExist() {
-					return nil, nil
+					return nil
 				}
 				mvn, err := toMappingValueNode(key, value)
 				if err != nil {
-					return nil, fmt.Errorf("convert key/value to node: %w", err)
+					return fmt.Errorf("convert key/value to node: %w", err)
 				}
-				return []Change{
-					&ChangeAddKey{
-						M:     m.Node,
-						Nodes: []*ast.MappingValueNode{mvn},
-						Index: findInsertIndex(opt.GetInsertLocations(), m.KeyValues),
-					},
-				}, nil
+				idx := findInsertIndex(opt.GetInsertLocations(), m.KeyValues)
+				m.Node.Values = slices.Insert(m.Node.Values, idx, mvn)
+				return nil
 			}
 			if opt.GetIgnoreIfKeyExist() {
-				return nil, nil
+				return nil
 			}
-			return []Change{
-				&ChangeSetValue{
-					Node:         node.Node,
-					Value:        value,
-					ClearComment: opt.GetClearComment(),
-				},
-			}, nil
+			return SetValueToMappingValue(node.Node, value, opt.GetClearComment())
 		},
 	}
 }
@@ -122,36 +112,20 @@ func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
 	return len(kvs)
 }
 
-type ChangeAddKey struct {
-	M     *ast.MappingNode
-	Nodes []*ast.MappingValueNode
-	Index int
-}
-
-func (a *ChangeAddKey) Run() error {
-	a.M.Values = slices.Insert(a.M.Values, a.Index, a.Nodes...)
-	return nil
-}
-
-type ChangeSetValue struct {
-	Node         *ast.MappingValueNode
-	Value        any
-	ClearComment bool
-}
-
-func (a *ChangeSetValue) Run() error {
-	v, err := valueToNode(a.Value)
+// SetValueToMappingValue sets the value of a mapping value node.
+func SetValueToMappingValue(node *ast.MappingValueNode, value any, clearComment bool) error {
+	v, err := valueToNode(value)
 	if err != nil {
 		return fmt.Errorf("convert value to node: %w", err)
 	}
-	cmt := a.Node.Value.GetComment()
-	if a.ClearComment {
+	cmt := node.Value.GetComment()
+	if clearComment {
 		cmt = nil
 	}
 	if err := v.SetComment(cmt); err != nil {
 		return fmt.Errorf("set comment to new value: %w", err)
 	}
-	a.Node.Value = v
+	node.Value = v
 	return nil
 }
 

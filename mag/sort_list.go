@@ -11,9 +11,9 @@ type SortFunc[T any] func(a, b *Node[T]) int
 
 func SortList[T any](fn SortFunc[T]) ListAction {
 	return &editListAction[T]{
-		Edit: func(m *ListValue[T]) ([]Change, error) {
+		Edit: func(m *ListValue[T]) error {
 			if fn == nil {
-				return nil, errors.New("sort function is nil")
+				return errors.New("sort function is nil")
 			}
 
 			values := make([]*Node[T], len(m.List))
@@ -25,12 +25,8 @@ func SortList[T any](fn SortFunc[T]) ListAction {
 				nodes[i] = value.Node
 			}
 
-			return []Change{
-				&ChangeSortList{
-					Node:   m.Node,
-					Values: nodes,
-				},
-			}, nil
+			m.Node.Values = nodes
+			return nil
 		},
 	}
 }
@@ -42,14 +38,4 @@ type Node[T any] struct {
 	Value T
 	// Comment is the comment of the node.
 	Comment string
-}
-
-type ChangeSortList struct {
-	Node   *ast.SequenceNode
-	Values []ast.Node
-}
-
-func (a *ChangeSortList) Run() error {
-	a.Node.Values = a.Values
-	return nil
 }

@@ -21,13 +21,8 @@ func ExampleNewEditList() {
 	act := mag.List(
 		"$",
 		mag.NewEditList[string](
-			func(m *mag.ListValue[string]) ([]mag.Change, error) {
-				return []mag.Change{
-					&mag.ChangeRemoveItemFromList{
-						Node:    m.Node,
-						Indexes: []int{0},
-					},
-				}, nil
+			func(m *mag.ListValue[string]) error {
+				return mag.RemoveItemsFromSequenceNode(m.Node, 0)
 			},
 		),
 	)

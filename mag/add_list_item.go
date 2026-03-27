@@ -10,37 +10,25 @@ import (
 // AddValuesToList returns an AddListItem adding the given value at the given index.
 func AddValuesToList(idx int, values ...any) ListAction {
 	return &editListAction[any]{
-		Edit: func(m *ListValue[any]) ([]Change, error) {
-			return []Change{
-				&ChangeAddItemsToList{
-					List:   m.Node,
-					Index:  idx,
-					Values: values,
-				},
-			}, nil
+		Edit: func(m *ListValue[any]) error {
+			return AddValuesToSequenceNode(m.Node, idx, values...)
 		},
 	}
 }
 
-type ChangeAddItemsToList struct {
-	List   *ast.SequenceNode
-	Values []any
-	Index  int
-}
-
-func (a *ChangeAddItemsToList) Run() error {
-	idx, err := checkInsertIndex(a.Index, len(a.List.Values))
+func AddValuesToSequenceNode(seq *ast.SequenceNode, index int, values ...any) error {
+	idx, err := checkInsertIndex(index, len(seq.Values))
 	if err != nil {
 		return err
 	}
-	nodes := make([]ast.Node, len(a.Values))
-	for i, v := range a.Values {
+	nodes := make([]ast.Node, len(values))
+	for i, v := range values {
 		n, err := valueToNode(v)
 		if err != nil {
 			return fmt.Errorf("convert value to node: %w", err)
 		}
 		nodes[i] = n
 	}
-	a.List.Values = slices.Insert(a.List.Values, idx, nodes...)
+	seq.Values = slices.Insert(seq.Values, idx, nodes...)
 	return nil
 }
