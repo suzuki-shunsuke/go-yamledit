@@ -19,16 +19,16 @@ func BytesToNode(b []byte) (ast.Node, error) {
 	return file.Docs[0].Body, nil
 }
 
-// NewBytes converts yaml bytes to a YAMLBytes struct.
-// This is useful to pass NewBytes strings to functions without temporary variables and error handling.
-func NewBytes(b []byte) *Bytes {
-	return &Bytes{b: b}
-}
-
 // Bytes holds a YAML document.
 // This is converted to ast.Node internally.
 type Bytes struct {
 	b []byte
+}
+
+// NewBytes converts yaml bytes to a YAMLBytes struct.
+// This is useful to pass NewBytes strings to functions without temporary variables and error handling.
+func NewBytes(b []byte) *Bytes {
+	return &Bytes{b: b}
 }
 
 type noop struct{}
