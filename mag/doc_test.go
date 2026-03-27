@@ -60,7 +60,7 @@ children:
 						return nil, nil
 					}
 					return []mag.Change{
-						&mag.RenameKeyAction{
+						&mag.ChangeRenameKey{
 							Key:  "first_name",
 							Node: mv.Node,
 						},

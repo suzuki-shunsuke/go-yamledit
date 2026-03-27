@@ -1,9 +1,6 @@
 package mag
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 )
@@ -74,31 +71,5 @@ func (a *EditMapAction) Run(m *ast.MappingNode) error {
 			return err
 		}
 	}
-	return nil
-}
-
-type RenameKeyAction struct {
-	Node *ast.MappingValueNode
-	Key  any
-}
-
-func (a *RenameKeyAction) Run() error {
-	oldToken := a.Node.Key.GetToken()
-	comment := a.Node.Key.GetComment()
-	v, err := yaml.ValueToNode(a.Key)
-	if err != nil {
-		return err
-	}
-	// Preserve the original token's position so that indentation is maintained
-	// when the AST is serialized back to a string.
-	v.GetToken().Position = oldToken.Position
-	if err := v.SetComment(comment); err != nil {
-		return fmt.Errorf("set comment to new key: %w", err)
-	}
-	k, ok := v.(ast.MapKeyNode)
-	if !ok {
-		return errors.New("failed to convert value to map key node")
-	}
-	a.Node.Key = k
 	return nil
 }
