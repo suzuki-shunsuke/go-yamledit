@@ -17,13 +17,11 @@ func ExampleWithComment() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := &mag.ListActions{
-		YAMLPath: "$",
-		Actions: []mag.ListAction{
-			// Add "zoo" with comment
-			mag.AddValueToList(mag.WithComment("zoo", " comment is added"), 1),
-		},
-	}
+	act := mag.ListAction(
+		"$",
+		// Add "zoo" with comment
+		mag.AddValuesToList(1, mag.WithComment("zoo", " comment is added")),
+	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}

@@ -2,36 +2,49 @@ package mag
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
+	"github.com/goccy/go-yaml/parser"
 )
+
+// BytesToNode parses the given YAML bytes and returns the root node.
+// Returns an error if the bytes cannot be parsed.
+// YAML should be a single document.
+func BytesToNode(b []byte) (ast.Node, error) {
+	file, err := parser.ParseBytes(b, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+	return file.Docs[0].Body, nil
+}
+
+// Bytes holds a YAML document.
+// This is converted to ast.Node internally.
+type Bytes struct {
+	b      []byte
+	isList bool
+}
+
+// NewBytes converts yaml bytes to a YAMLBytes struct.
+// This is useful to pass YAML string to functions without temporary variables and error handling.
+func NewBytes(b []byte) *Bytes {
+	return &Bytes{b: b}
+}
+
+// NewListBytes converts a YAML list bytes to a Bytes struct.
+// This is useful to pass YAML list string to functions without temporary variables and error handling.
+func NewListBytes(b []byte) *Bytes {
+	return &Bytes{
+		b:      b,
+		isList: true,
+	}
+}
 
 type noop struct{}
 
 // NoChange is a sentinel value that indicates no change should be made against mapping key or value.
 var NoChange = noop{} //nolint:gochecknoglobals
-
-func isChanged(value any) bool {
-	_, ok := value.(noop)
-	return !ok
-}
-
-func unifyInt(value any) (any, bool) {
-	switch v := value.(type) {
-	case int, int64, uint64:
-		return fmt.Sprintf("%d", v), true
-	default:
-		return value, false
-	}
-}
-
-func compareKey(key, keyNodeValue any) bool {
-	uKey, b1 := unifyInt(key)
-	uKeyNodeValue, b2 := unifyInt(keyNodeValue)
-	return b1 == b2 && reflect.DeepEqual(uKey, uKeyNodeValue)
-}
 
 func flatten(node ast.Node, depth int) ([]ast.Node, error) {
 	if depth == 0 {
@@ -91,6 +104,12 @@ func getDepthByPath(yamlPath string) int { //nolint:cyclop
 }
 
 func valueToNode(value any) (ast.Node, error) {
+	if node, ok := value.(ast.Node); ok {
+		return node, nil
+	}
+	if b, ok := value.(*Bytes); ok {
+		return BytesToNode(b.b)
+	}
 	valWithComment := toValueWithComment(value)
 	v, err := yaml.ValueToNode(valWithComment.Value)
 	if err != nil {

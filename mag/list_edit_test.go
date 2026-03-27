@@ -8,21 +8,28 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleNewBytes() {
+func ExampleEditListAction() {
 	yml := `
-- foo # comment
+- foo
+- bar # comment
 `
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.ListAction("$", mag.AddValuesToList(0, mag.NewBytes([]byte("hello # world"))))
+	act := mag.ListAction(
+		"$",
+		mag.EditListAction[string](
+			func(m *mag.List[string]) error {
+				return mag.RemoveValuesFromSequenceNode(m.Node, 0)
+			},
+		),
+	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
-	// - hello # world
-	// - foo # comment
+	// - bar # comment
 }

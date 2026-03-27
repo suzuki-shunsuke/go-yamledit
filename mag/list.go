@@ -8,30 +8,32 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// List returns Action editing lists.
-func List(yamlPath string, actions ...ListAction) Action {
-	return &ListActions{
+// ListAction returns Action editing lists.
+// yamlPath is a path to edited lists.
+// e.g. "$.reviewers"
+// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
+func ListAction(yamlPath string, actions ...SequenceNodeAction) Action {
+	return &listActions{
 		YAMLPath: yamlPath,
 		Actions:  actions,
 	}
 }
 
-// ListAction represents an action editing a list.
-type ListAction interface {
+// SequenceNodeAction represents an action editing a list.
+type SequenceNodeAction interface {
 	Run(seq *ast.SequenceNode) error
 }
 
-// ListActions is an Action editing lists.
-type ListActions struct {
+type listActions struct {
 	// YAMLPath is a path to edited lists.
 	// e.g. "$.reviewers"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 	YAMLPath string
-	Actions  []ListAction
+	Actions  []SequenceNodeAction
 }
 
 // Run edits lists.
-func (a *ListActions) Run(node ast.Node) error {
+func (a *listActions) Run(node ast.Node) error {
 	if a.YAMLPath == "" {
 		return errors.New("YAMLPath is not set")
 	}
@@ -55,7 +57,7 @@ func (a *ListActions) Run(node ast.Node) error {
 	return nil
 }
 
-func (a *ListActions) run(node ast.Node) error {
+func (a *listActions) run(node ast.Node) error {
 	seq, ok := node.(*ast.SequenceNode)
 	if !ok {
 		return fmt.Errorf("expected a sequence node: %s", node.Type().String())
