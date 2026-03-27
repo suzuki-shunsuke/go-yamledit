@@ -6,14 +6,15 @@ import (
 )
 
 type MapValue[K comparable, V any] struct {
-	Map       map[K]*KeyValue[K, V]
-	KeyValues []*KeyValue[K, V]
+	Map       map[K]*KeyValue[K]
+	KeyValues []*KeyValue[K]
+	Value     V
 	Node      *ast.MappingNode
 }
 
-type KeyValue[K comparable, V any] struct {
+type KeyValue[K comparable] struct {
 	Key     K
-	Value   V
+	Value   any
 	Comment string
 	Node    *ast.MappingValueNode
 	Index   int
@@ -33,23 +34,30 @@ type Change interface {
 // Run edits keys and values of a given map.
 func (a *EditMapAction[K, V]) Run(m *ast.MappingNode) error {
 	mv := &MapValue[K, V]{
-		Map:       make(map[K]*KeyValue[K, V], len(m.Values)),
-		KeyValues: make([]*KeyValue[K, V], 0, len(m.Values)),
+		Map:       make(map[K]*KeyValue[K], len(m.Values)),
+		KeyValues: make([]*KeyValue[K], 0, len(m.Values)),
 		Node:      m,
 	}
 	mapIter := m.MapRange()
 	idx := 0
+
+	var value V
+	if err := yaml.NodeToValue(m, &value); err != nil {
+		return err
+	}
+	mv.Value = value
+
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
 		var k K
 		if err := yaml.NodeToValue(keyValue.Key, &k); err != nil {
 			return err
 		}
-		var v V
+		var v any
 		if err := yaml.NodeToValue(keyValue.Value, &v); err != nil {
 			return err
 		}
-		kv := &KeyValue[K, V]{
+		kv := &KeyValue[K]{
 			Key:     k,
 			Value:   v,
 			Node:    keyValue,

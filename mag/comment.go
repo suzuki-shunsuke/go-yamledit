@@ -5,11 +5,6 @@ import (
 	"github.com/goccy/go-yaml/token"
 )
 
-type valueWithComment struct {
-	Value   any
-	Comment string
-}
-
 // WithComment adds a comment to a value.
 func WithComment(v any, comment string) any {
 	if a, ok := v.(*valueWithComment); ok {
@@ -21,6 +16,11 @@ func WithComment(v any, comment string) any {
 	return &valueWithComment{
 		Value: v, Comment: comment,
 	}
+}
+
+type valueWithComment struct {
+	Value   any
+	Comment string
 }
 
 func commentGroupFromString(s string) *ast.CommentGroupNode {

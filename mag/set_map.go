@@ -11,8 +11,6 @@ import (
 )
 
 // TODO
-// map
-//   [ ] Sort keys
 // comment
 //   [ ] Add comment
 //   [ ] Remove comment
@@ -43,7 +41,7 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 						return changes, nil
 					}
 					if location.BeforeKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any, any]) bool {
+						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
 							return compareKey(location.BeforeKey, v.Key)
 						})
 						if idx == -1 {
@@ -53,7 +51,7 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 						return changes, nil
 					}
 					if location.AfterKey != nil {
-						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any, any]) bool {
+						idx := slices.IndexFunc(m.KeyValues, func(v *KeyValue[any]) bool {
 							return compareKey(location.AfterKey, v.Key)
 						})
 						if idx == -1 {
