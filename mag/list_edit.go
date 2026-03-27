@@ -7,10 +7,6 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type editListAction[T any] struct {
-	Edit EditList[T]
-}
-
 // NewEditList creates a new ListAction that applies the given edit function to a list.
 func NewEditList[T any](edit EditList[T]) ListAction {
 	return &editListAction[T]{
@@ -21,9 +17,13 @@ func NewEditList[T any](edit EditList[T]) ListAction {
 // EditList returns changes to be applied to a list.
 type EditList[T any] func(m *ListValue[T]) error
 
-type ListValue[T any] struct {
+type ListValue[T any] struct { // TODO Rename
 	List []*Node[T]
 	Node *ast.SequenceNode
+}
+
+type editListAction[T any] struct {
+	Edit EditList[T]
 }
 
 // Run edits keys and values of a given map.

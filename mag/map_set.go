@@ -9,16 +9,11 @@ import (
 	"github.com/goccy/go-yaml/token"
 )
 
-// TODO
-// comment
-//   [ ] Remove comment
-//   [ ] Edit comment
-
 // SetKey returns a MapAction setting given key and value.
 // SetKeyOption changes the behavior of SetKey.
 // If SetKeyOption is nil, the new key-value pair will be appended to the end of the map, and if the key exists the value will be updated.
 func SetKey(key, value any, opt *SetKeyOption) MapAction {
-	return &EditMapAction[any, any]{
+	return &editMapAction[any, any]{
 		Edit: func(m *MapValue[any, any]) error {
 			node, ok := m.Map[key]
 			if !ok {
@@ -87,6 +82,23 @@ func (o *SetKeyOption) GetInsertLocations() []*InsertLocation {
 	return o.InsertLocations
 }
 
+// SetValueToMappingValue sets the value of a mapping value node.
+func SetValueToMappingValue(node *ast.MappingValueNode, value any, clearComment bool) error {
+	v, err := valueToNode(value)
+	if err != nil {
+		return fmt.Errorf("convert value to node: %w", err)
+	}
+	cmt := node.Value.GetComment()
+	if clearComment {
+		cmt = nil
+	}
+	if err := v.SetComment(cmt); err != nil {
+		return fmt.Errorf("set comment to new value: %w", err)
+	}
+	node.Value = v
+	return nil
+}
+
 func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
 	for _, loc := range locations {
 		if loc.First {
@@ -110,23 +122,6 @@ func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
 		}
 	}
 	return len(kvs)
-}
-
-// SetValueToMappingValue sets the value of a mapping value node.
-func SetValueToMappingValue(node *ast.MappingValueNode, value any, clearComment bool) error {
-	v, err := valueToNode(value)
-	if err != nil {
-		return fmt.Errorf("convert value to node: %w", err)
-	}
-	cmt := node.Value.GetComment()
-	if clearComment {
-		cmt = nil
-	}
-	if err := v.SetComment(cmt); err != nil {
-		return fmt.Errorf("set comment to new value: %w", err)
-	}
-	node.Value = v
-	return nil
 }
 
 func toMappingValueNode(k, v any) (*ast.MappingValueNode, error) {

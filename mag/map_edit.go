@@ -20,15 +20,19 @@ type KeyValue[K comparable] struct {
 	Index   int
 }
 
-// EditMapAction represents an action to edit a map key and value.
-type EditMapAction[K comparable, V any] struct {
-	Edit EditMap[K, V]
+func EditMapAction[K comparable, V any](edit EditMap[K, V]) *editMapAction[K, V] {
+	return &editMapAction[K, V]{Edit: edit}
 }
 
 type EditMap[K comparable, V any] func(m *MapValue[K, V]) error
 
+// editMapAction represents an action to edit a map key and value.
+type editMapAction[K comparable, V any] struct {
+	Edit EditMap[K, V]
+}
+
 // Run edits keys and values of a given map.
-func (a *EditMapAction[K, V]) Run(m *ast.MappingNode) error {
+func (a *editMapAction[K, V]) Run(m *ast.MappingNode) error {
 	mv := &MapValue[K, V]{
 		Map:       make(map[K]*KeyValue[K], len(m.Values)),
 		KeyValues: make([]*KeyValue[K], 0, len(m.Values)),

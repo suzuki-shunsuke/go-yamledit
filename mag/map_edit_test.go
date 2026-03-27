@@ -23,41 +23,41 @@ type: yoo # keep comment 3
 	}
 	act := mag.Map(
 		"$",
-		&mag.EditMapAction[string, any]{
+		mag.EditMapAction[string, any](
 			// Change the value of the "name" key to "new name"
-			Edit: func(m *mag.MapValue[string, any]) error {
+			func(m *mag.MapValue[string, any]) error {
 				kv, ok := m.Map["name"]
 				if !ok {
 					return nil
 				}
 				return mag.SetValueToMappingValue(kv.Node, "new name", false)
 			},
-		},
-		&mag.EditMapAction[string, any]{
+		),
+		mag.EditMapAction[string, any](
 			// If the given key does not exist, do nothing
-			Edit: func(m *mag.MapValue[string, any]) error {
+			func(m *mag.MapValue[string, any]) error {
 				kv, ok := m.Map["password"]
 				if !ok {
 					return nil
 				}
 				return mag.SetValueToMappingValue(kv.Node, "***", false)
 			},
-		},
-		&mag.EditMapAction[string, any]{
+		),
+		mag.EditMapAction[string, any](
 			// Rename the "age" key to "age-2"
-			Edit: func(m *mag.MapValue[string, any]) error {
+			func(m *mag.MapValue[string, any]) error {
 				kv, ok := m.Map["age"]
 				if !ok {
 					return nil
 				}
 				return mag.RenameKeyOfMappingValueNode(kv.Node, "age-2")
 			},
-		},
-		&mag.EditMapAction[string, any]{
+		),
+		mag.EditMapAction[string, any](
 			// Change both key and value
 			// key: type => type-2
 			// value yoo => yoo-2
-			Edit: func(m *mag.MapValue[string, any]) error {
+			func(m *mag.MapValue[string, any]) error {
 				kv, ok := m.Map["type"]
 				if !ok {
 					return nil
@@ -67,7 +67,7 @@ type: yoo # keep comment 3
 				}
 				return mag.SetValueToMappingValue(kv.Node, "yoo-2", false)
 			},
-		},
+		),
 	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
@@ -93,15 +93,15 @@ func TestEditMapAction_Run(t *testing.T) { //nolint:cyclop
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil
 					}
 					return mag.SetValueToMappingValue(kv.Node, "bar", false)
 				},
-			}),
+			)),
 			want: `name: bar
 age: 10
 `,
@@ -111,15 +111,15 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil
 					}
 					return mag.RenameKeyOfMappingValueNode(kv.Node, "first_name")
 				},
-			}),
+			)),
 			want: `first_name: foo
 age: 10
 `,
@@ -128,15 +128,15 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					_, ok := m.Map["missing"]
 					if !ok {
 						return nil
 					}
 					return nil
 				},
-			}),
+			)),
 			want: `name: foo
 `,
 		},
@@ -144,12 +144,12 @@ age: 10
 			name: "preserve comment",
 			yml: `name: foo # important
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					kv := m.Map["name"]
 					return mag.SetValueToMappingValue(kv.Node, "bar", false)
 				},
-			}),
+			)),
 			want: `name: bar # important
 `,
 		},
@@ -157,11 +157,11 @@ age: 10
 			name: "edit func returns error",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(_ *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(_ *mag.MapValue[string, any]) error {
 					return errors.New("edit error")
 				},
-			}),
+			)),
 			wantErr: true,
 		},
 		{
@@ -169,14 +169,14 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					if err := mag.SetValueToMappingValue(m.Map["name"].Node, "bar", false); err != nil {
 						return err
 					}
 					return mag.SetValueToMappingValue(m.Map["age"].Node, 20, false)
 				},
-			}),
+			)),
 			want: `name: bar
 age: 20
 `,
@@ -185,11 +185,11 @@ age: 20
 			name: "no changes",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string, any]{
-				Edit: func(_ *mag.MapValue[string, any]) error {
+			action: mag.Map("$", mag.EditMapAction[string, any](
+				func(_ *mag.MapValue[string, any]) error {
 					return nil
 				},
-			}),
+			)),
 			want: `name: foo
 `,
 		},
@@ -199,12 +199,12 @@ age: 20
   bar: 1
   baz: 2
 `,
-			action: mag.Map("$.foo", &mag.EditMapAction[string, any]{
-				Edit: func(m *mag.MapValue[string, any]) error {
+			action: mag.Map("$.foo", mag.EditMapAction[string, any](
+				func(m *mag.MapValue[string, any]) error {
 					kv := m.Map["bar"]
 					return mag.SetValueToMappingValue(kv.Node, 99, false)
 				},
-			}),
+			)),
 			want: `foo:
   bar: 99
   baz: 2
@@ -213,11 +213,11 @@ age: 20
 		{
 			name: "invalid yaml path",
 			yml:  `name: foo`,
-			action: mag.Map("invalid[", &mag.EditMapAction[string, any]{
-				Edit: func(_ *mag.MapValue[string, any]) error {
+			action: mag.Map("invalid[", mag.EditMapAction[string, any](
+				func(_ *mag.MapValue[string, any]) error {
 					return nil
 				},
-			}),
+			)),
 			wantErr: true,
 		},
 	}

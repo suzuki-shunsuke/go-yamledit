@@ -7,10 +7,24 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
+// WhenDuplicateKey specifies the behavior when the new key already exists.
+type WhenDuplicateKey int
+
+const (
+	// Skip doesn't change the node.
+	Skip WhenDuplicateKey = iota
+	// IgnoreExistingKey overwrites the existing key and value.
+	IgnoreExistingKey
+	// RemoveOldKey removes the old key and value.
+	RemoveOldKey
+	// RaiseError returns an error when the new key already exists.
+	RaiseError
+)
+
 // RenameKey returns a MapAction renaming given keys from a map.
 // whenDuplicate specifies the behavior when the new key already exists.
 func RenameKey(key, newKey any, whenDuplicate WhenDuplicateKey) MapAction {
-	return &EditMapAction[any, any]{
+	return &editMapAction[any, any]{
 		Edit: func(m *MapValue[any, any]) error {
 			kv, ok := m.Map[key]
 			if !ok {
@@ -40,20 +54,6 @@ func RenameKey(key, newKey any, whenDuplicate WhenDuplicateKey) MapAction {
 		},
 	}
 }
-
-// WhenDuplicateKey specifies the behavior when the new key already exists.
-type WhenDuplicateKey int
-
-const (
-	// Skip doesn't change the node.
-	Skip WhenDuplicateKey = iota
-	// IgnoreExistingKey overwrites the existing key and value.
-	IgnoreExistingKey
-	// RemoveOldKey removes the old key and value.
-	RemoveOldKey
-	// RaiseError returns an error when the new key already exists.
-	RaiseError
-)
 
 // RenameKeyOfMappingValueNode renames the key of a mapping value node.
 func RenameKeyOfMappingValueNode(node *ast.MappingValueNode, newKey any) error {

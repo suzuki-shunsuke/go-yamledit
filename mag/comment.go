@@ -29,6 +29,18 @@ func WithComment(v any, comment string) any {
 	}
 }
 
+// SetCommentToNode sets a comment to a node.
+// If comment is empty, it removes the comment from the node.
+func SetCommentToNode(node ast.Node, comment string) error {
+	if comment == "" {
+		if err := node.SetComment(nil); err != nil {
+			return fmt.Errorf("remove comment: %w", err)
+		}
+		return nil
+	}
+	return node.SetComment(commentGroupFromString(comment))
+}
+
 type valueWithComment struct {
 	Value   any
 	Comment string
@@ -58,16 +70,4 @@ func getComment(node ast.Node) string {
 		return ""
 	}
 	return cn.String()
-}
-
-// SetCommentToNode sets a comment to a node.
-// If comment is empty, it removes the comment from the node.
-func SetCommentToNode(node ast.Node, comment string) error {
-	if comment == "" {
-		if err := node.SetComment(nil); err != nil {
-			return fmt.Errorf("remove comment: %w", err)
-		}
-		return nil
-	}
-	return node.SetComment(commentGroupFromString(comment))
 }

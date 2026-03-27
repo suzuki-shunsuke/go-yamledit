@@ -8,7 +8,7 @@ import (
 
 // RemoveKeys returns a MapAction removing given keys from a map.
 func RemoveKeys(keys ...any) MapAction {
-	return &EditMapAction[any, any]{
+	return &editMapAction[any, any]{
 		Edit: func(m *MapValue[any, any]) error {
 			indexes := make([]int, 0, len(keys))
 			for _, key := range keys {
