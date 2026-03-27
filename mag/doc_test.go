@@ -49,8 +49,8 @@ children:
 					},
 				},
 			}),
-			&mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], unmarshal func(any) error) ([]mag.Change, error) {
+			&mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], unmarshal func(any) error) ([]mag.Change, error) {
 					p := Parent{}
 					if err := unmarshal(&p); err != nil {
 						return nil, err

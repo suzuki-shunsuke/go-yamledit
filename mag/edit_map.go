@@ -5,51 +5,51 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type MapValue[T comparable] struct {
-	Map       map[T]*KeyValue[T]
-	KeyValues []*KeyValue[T]
+type MapValue[K comparable, V any] struct {
+	Map       map[K]*KeyValue[K, V]
+	KeyValues []*KeyValue[K, V]
 	Node      *ast.MappingNode
 }
 
-type KeyValue[T comparable] struct {
-	Key     T
-	Value   any
+type KeyValue[K comparable, V any] struct {
+	Key     K
+	Value   V
 	Comment string
 	Node    *ast.MappingValueNode
 	Index   int
 }
 
 // EditMapAction represents an action to edit a map key and value.
-type EditMapAction[T comparable] struct {
-	Edit EditMap[T]
+type EditMapAction[K comparable, V any] struct {
+	Edit EditMap[K, V]
 }
 
-type EditMap[T comparable] func(m *MapValue[T], unmarshal func(any) error) ([]Change, error)
+type EditMap[K comparable, V any] func(m *MapValue[K, V], unmarshal func(any) error) ([]Change, error)
 
 type Change interface {
 	Run() error
 }
 
 // Run edits keys and values of a given map.
-func (a *EditMapAction[T]) Run(m *ast.MappingNode) error {
-	mv := &MapValue[T]{
-		Map:       make(map[T]*KeyValue[T], len(m.Values)),
-		KeyValues: make([]*KeyValue[T], 0, len(m.Values)),
+func (a *EditMapAction[K, V]) Run(m *ast.MappingNode) error {
+	mv := &MapValue[K, V]{
+		Map:       make(map[K]*KeyValue[K, V], len(m.Values)),
+		KeyValues: make([]*KeyValue[K, V], 0, len(m.Values)),
 		Node:      m,
 	}
 	mapIter := m.MapRange()
 	idx := 0
 	for mapIter.Next() {
 		keyValue := mapIter.KeyValue()
-		var k T
+		var k K
 		if err := yaml.NodeToValue(keyValue.Key, &k); err != nil {
 			return err
 		}
-		var v T
-		if err := yaml.NodeToValue(keyValue.Key, &v); err != nil {
+		var v V
+		if err := yaml.NodeToValue(keyValue.Value, &v); err != nil {
 			return err
 		}
-		kv := &KeyValue[T]{
+		kv := &KeyValue[K, V]{
 			Key:     k,
 			Value:   v,
 			Node:    keyValue,

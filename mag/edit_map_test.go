@@ -24,11 +24,11 @@ type: yoo # keep comment 3
 	act := &mag.MapActions{
 		YAMLPath: "$",
 		Actions: []mag.MapAction{
-			&mag.EditMapAction[string]{
+			&mag.EditMapAction[string, any]{
 				// Change the value of the "name" key to "new name"
 				// Match: mag.MatchMappingValueByKey("name"),
 				// Edit:  mag.EditMappingValueStatic(mag.NoChange, "new name"),
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil, nil
@@ -41,9 +41,9 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction[string]{
+			&mag.EditMapAction[string, any]{
 				// If the given key does not exist, do nothing
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["password"]
 					if !ok {
 						return nil, nil
@@ -56,11 +56,11 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction[string]{
+			&mag.EditMapAction[string, any]{
 				// Rename the "age" key to "age-2"
 				// Match: mag.MatchMappingValueByKey("age"),
 				// Edit:  mag.EditMappingValueStatic("age-2", mag.NoChange),
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["age"]
 					if !ok {
 						return nil, nil
@@ -73,13 +73,13 @@ type: yoo # keep comment 3
 					}, nil
 				},
 			},
-			&mag.EditMapAction[string]{
+			&mag.EditMapAction[string, any]{
 				// Change both key and value
 				// key: type => type-2
 				// value yoo => yoo-2
 				// Match: mag.MatchMappingValueByKey("type"),
 				// Edit:  mag.EditMappingValueStatic("type-2", "yoo-2"),
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["type"]
 					if !ok {
 						return nil, nil
@@ -122,8 +122,8 @@ func TestEditMapAction_Run(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil, nil
@@ -145,8 +145,8 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv, ok := m.Map["name"]
 					if !ok {
 						return nil, nil
@@ -167,8 +167,8 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					_, ok := m.Map["missing"]
 					if !ok {
 						return nil, nil
@@ -183,8 +183,8 @@ age: 10
 			name: "preserve comment",
 			yml: `name: foo # important
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv := m.Map["name"]
 					return []mag.Change{
 						&mag.ChangeSetValue{
@@ -201,8 +201,8 @@ age: 10
 			name: "edit func returns error",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(_ *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					return nil, errors.New("edit error")
 				},
 			}),
@@ -213,8 +213,8 @@ age: 10
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					return []mag.Change{
 						&mag.ChangeSetValue{
 							Value: "bar",
@@ -235,8 +235,8 @@ age: 20
 			name: "no changes",
 			yml: `name: foo
 `,
-			action: mag.Map("$", &mag.EditMapAction[string]{
-				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$", &mag.EditMapAction[string, any]{
+				Edit: func(_ *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					return nil, nil
 				},
 			}),
@@ -249,8 +249,8 @@ age: 20
   bar: 1
   baz: 2
 `,
-			action: mag.Map("$.foo", &mag.EditMapAction[string]{
-				Edit: func(m *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action: mag.Map("$.foo", &mag.EditMapAction[string, any]{
+				Edit: func(m *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					kv := m.Map["bar"]
 					return []mag.Change{
 						&mag.ChangeSetValue{
@@ -268,8 +268,8 @@ age: 20
 		{
 			name:    "invalid yaml path",
 			yml:     `name: foo`,
-			action:  mag.Map("invalid[", &mag.EditMapAction[string]{
-				Edit: func(_ *mag.MapValue[string], _ func(any) error) ([]mag.Change, error) {
+			action:  mag.Map("invalid[", &mag.EditMapAction[string, any]{
+				Edit: func(_ *mag.MapValue[string, any], _ func(any) error) ([]mag.Change, error) {
 					return nil, nil
 				},
 			}),
