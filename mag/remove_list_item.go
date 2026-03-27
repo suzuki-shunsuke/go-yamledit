@@ -11,7 +11,7 @@ type SelectItemFromList[T any] func(value *Node[T]) (bool, error)
 
 // RemoveItemsFromList returns a ListAction removing items selected by the given function.
 func RemoveItemsFromList[T any](remove SelectItemFromList[T]) ListAction {
-	return &EditListAction[T]{
+	return &editListAction[T]{
 		Edit: func(m *ListValue[T]) ([]Change, error) {
 			indexes := make([]int, 0, len(m.List))
 			for i, node := range m.List {

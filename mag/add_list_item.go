@@ -9,7 +9,7 @@ import (
 
 // AddValuesToList returns an AddListItem adding the given value at the given index.
 func AddValuesToList(idx int, values ...any) ListAction {
-	return &EditListAction[any]{
+	return &editListAction[any]{
 		Edit: func(m *ListValue[any]) ([]Change, error) {
 			return []Change{
 				&ChangeAddItemsToList{

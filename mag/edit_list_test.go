@@ -8,9 +8,10 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleWithComment() {
+func ExampleNewEditList() {
 	yml := `
 - foo
+- bar # comment
 `
 
 	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
@@ -19,14 +20,21 @@ func ExampleWithComment() {
 	}
 	act := mag.List(
 		"$",
-		// Add "zoo" with comment
-		mag.AddValuesToList(1, mag.WithComment("zoo", " comment is added")),
+		mag.NewEditList[string](
+			func(m *mag.ListValue[string]) ([]mag.Change, error) {
+				return []mag.Change{
+					&mag.ChangeRemoveItemFromList{
+						Node:    m.Node,
+						Indexes: []int{0},
+					},
+				}, nil
+			},
+		),
 	)
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println(file.String())
 	// Output:
-	// - foo
-	// - zoo # comment is added
+	// - bar # comment
 }

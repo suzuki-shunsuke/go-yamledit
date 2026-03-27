@@ -27,10 +27,6 @@ type EditMapAction[K comparable, V any] struct {
 
 type EditMap[K comparable, V any] func(m *MapValue[K, V]) ([]Change, error)
 
-type Change interface {
-	Run() error
-}
-
 // Run edits keys and values of a given map.
 func (a *EditMapAction[K, V]) Run(m *ast.MappingNode) error {
 	mv := &MapValue[K, V]{
