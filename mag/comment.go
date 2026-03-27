@@ -60,16 +60,14 @@ func getComment(node ast.Node) string {
 	return cn.String()
 }
 
-func RemoveCommentFromNode(node ast.Node) error {
-	if err := node.SetComment(nil); err != nil {
-		return fmt.Errorf("remove comment: %w", err)
-	}
-	return nil
-}
-
+// SetCommentToNode sets a comment to a node.
+// If comment is empty, it removes the comment from the node.
 func SetCommentToNode(node ast.Node, comment string) error {
 	if comment == "" {
-		return RemoveCommentFromNode(node)
+		if err := node.SetComment(nil); err != nil {
+			return fmt.Errorf("remove comment: %w", err)
+		}
+		return nil
 	}
 	return node.SetComment(commentGroupFromString(comment))
 }
