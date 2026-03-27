@@ -22,13 +22,23 @@ func BytesToNode(b []byte) (ast.Node, error) {
 // Bytes holds a YAML document.
 // This is converted to ast.Node internally.
 type Bytes struct {
-	b []byte
+	b      []byte
+	isList bool
 }
 
 // NewBytes converts yaml bytes to a YAMLBytes struct.
-// This is useful to pass NewBytes strings to functions without temporary variables and error handling.
+// This is useful to pass YAML string to functions without temporary variables and error handling.
 func NewBytes(b []byte) *Bytes {
 	return &Bytes{b: b}
+}
+
+// NewListBytes converts a YAML list bytes to a Bytes struct.
+// This is useful to pass YAML list string to functions without temporary variables and error handling.
+func NewListBytes(b []byte) *Bytes {
+	return &Bytes{
+		b:      b,
+		isList: true,
+	}
 }
 
 type noop struct{}

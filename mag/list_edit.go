@@ -7,8 +7,8 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-// NewEditList creates a new ListAction that applies the given edit function to a list.
-func NewEditList[T any](edit EditList[T]) SequenceNodeAction {
+// EditListAction creates a new ListAction that applies the given edit function to a list.
+func EditListAction[T any](edit EditList[T]) SequenceNodeAction {
 	return &editListAction[T]{
 		Edit: edit,
 	}

@@ -50,3 +50,26 @@ func ExampleAddValuesToList_negative_index() {
 	// - bar
 	// - zoo
 }
+
+func ExampleAddValuesToList_with_list_bytes() {
+	yml := `
+- foo # comment
+`
+
+	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	if err != nil {
+		log.Fatal(err)
+	}
+	act := mag.ListAction("$", mag.AddValuesToList(-1, mag.NewListBytes([]byte(`
+- bar # comment 1
+- zoo # comment 2
+`))))
+	if err := act.Run(file.Docs[0].Body); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(file.String())
+	// Output:
+	// - foo # comment
+	// - bar # comment 1
+	// - zoo # comment 2
+}

@@ -8,7 +8,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleNewEditList() {
+func ExampleEditListAction() {
 	yml := `
 - foo
 - bar # comment
@@ -20,7 +20,7 @@ func ExampleNewEditList() {
 	}
 	act := mag.ListAction(
 		"$",
-		mag.NewEditList[string](
+		mag.EditListAction[string](
 			func(m *mag.List[string]) error {
 				return mag.RemoveValuesFromSequenceNode(m.Node, 0)
 			},
