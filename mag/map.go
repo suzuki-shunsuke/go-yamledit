@@ -9,8 +9,11 @@ import (
 )
 
 // Map returns Action editing maps.
+// yamlPath is a path to edited maps.
+// e.g. "$.reviewer"
+// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
 func Map(yamlPath string, actions ...MapAction) Action {
-	return &MapActions{
+	return &mapActions{
 		YAMLPath: yamlPath,
 		Actions:  actions,
 	}
@@ -21,8 +24,7 @@ type MapAction interface {
 	Run(m *ast.MappingNode) error
 }
 
-// MapActions is an Action editing maps.
-type MapActions struct {
+type mapActions struct {
 	// YAMLPath is a path to edited maps.
 	// e.g. "$.reviewer"
 	// https://github.com/goccy/go-yaml/blob/v1.19.2/path.go#L17-L22
@@ -30,8 +32,7 @@ type MapActions struct {
 	Actions  []MapAction
 }
 
-// Run edits maps.
-func (a *MapActions) Run(node ast.Node) error {
+func (a *mapActions) Run(node ast.Node) error {
 	if a.YAMLPath == "" {
 		return errors.New("YAMLPath is not set")
 	}
@@ -59,7 +60,7 @@ func (a *MapActions) Run(node ast.Node) error {
 	return nil
 }
 
-func (a *MapActions) run(m *ast.MappingNode) error {
+func (a *mapActions) run(m *ast.MappingNode) error {
 	for _, action := range a.Actions {
 		if err := action.Run(m); err != nil {
 			return err
