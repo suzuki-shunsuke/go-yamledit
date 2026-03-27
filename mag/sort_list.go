@@ -4,17 +4,36 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 )
 
+type SortFunc[T any] func(a, b *Node[T]) int
+
 func SortList[T any](fn SortFunc[T]) ListAction {
-	return &sortListAction[T]{
-		Sort: fn,
+	return &EditListAction[T]{
+		Edit: func(m *ListValue[T], _ func(any) error) ([]Change, error) {
+			if fn == nil {
+				return nil, errors.New("sort function is nil")
+			}
+
+			values := make([]*Node[T], len(m.List))
+			copy(values, m.List)
+			slices.SortStableFunc(values, fn)
+
+			nodes := make([]ast.Node, len(m.List))
+			for i, value := range values {
+				nodes[i] = value.Node
+			}
+
+			return []Change{
+				&ChangeSortList{
+					Node:   m.Node,
+					Values: nodes,
+				},
+			}, nil
+		},
 	}
 }
-
-type SortFunc[T any] func(a, b *Node[T]) int
 
 // Node represents a YAML node.
 type Node[T any] struct {
@@ -25,33 +44,12 @@ type Node[T any] struct {
 	Comment string
 }
 
-func (n *Node[T]) Unmarshal(v any) error {
-	return yaml.NodeToValue(n.Node, v)
+type ChangeSortList struct {
+	Node   *ast.SequenceNode
+	Values []ast.Node
 }
 
-type sortListAction[T any] struct {
-	Sort SortFunc[T]
-}
-
-func (a *sortListAction[T]) Run(seq *ast.SequenceNode) error {
-	if a.Sort == nil {
-		return errors.New("sort is not set")
-	}
-	var values []T
-	if err := yaml.NodeToValue(seq, &values); err != nil {
-		return err
-	}
-	valueWithNodes := make([]*Node[T], len(values))
-	for i, value := range values {
-		valueWithNodes[i] = &Node[T]{
-			Node:  seq.Values[i],
-			Value: value,
-		}
-	}
-	slices.SortStableFunc(valueWithNodes, a.Sort)
-
-	for i, item := range valueWithNodes {
-		seq.Values[i] = item.Node
-	}
+func (a *ChangeSortList) Run() error {
+	a.Node.Values = a.Values
 	return nil
 }
