@@ -5,7 +5,7 @@ import (
 	"github.com/goccy/go-yaml/ast"
 )
 
-type MapValue[K comparable, V any] struct {
+type MapValue[K comparable, V any] struct { // TODO rename
 	Map       map[K]*KeyValue[K]
 	KeyValues []*KeyValue[K]
 	Value     V
@@ -20,7 +20,7 @@ type KeyValue[K comparable] struct {
 	Index   int
 }
 
-func EditMapAction[K comparable, V any](edit EditMap[K, V]) *editMapAction[K, V] {
+func EditMapAction[K comparable, V any](edit EditMap[K, V]) MapAction {
 	return &editMapAction[K, V]{Edit: edit}
 }
 
