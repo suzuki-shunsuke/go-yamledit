@@ -1,6 +1,8 @@
 package mag
 
 import (
+	"fmt"
+
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/token"
 )
@@ -56,4 +58,27 @@ func getComment(node ast.Node) string {
 		return ""
 	}
 	return cn.String()
+}
+
+type ChangeRemoveComment struct {
+	Node ast.Node
+}
+
+func (a *ChangeRemoveComment) Run() error {
+	if err := a.Node.SetComment(nil); err != nil {
+		return fmt.Errorf("remove comment: %w", err)
+	}
+	return nil
+}
+
+type ChangeSetComment struct {
+	Node    ast.Node
+	Comment string
+}
+
+func (a *ChangeSetComment) Run() error {
+	if err := a.Node.SetComment(commentGroupFromString(a.Comment)); err != nil {
+		return fmt.Errorf("set comment: %w", err)
+	}
+	return nil
 }
