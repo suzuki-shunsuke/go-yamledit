@@ -71,7 +71,7 @@ children:
 				return value.Value.Name == "adam", nil
 			}),
 			// Add a child at index 0
-			mag.AddValueToList(map[string]any{"name": "jessica"}, 0),
+			mag.AddValuesToList(0, map[string]any{"name": "jessica"}),
 			// Sort children by name
 			mag.SortList[Child](func(a, b *mag.Node[Child]) int {
 				return strings.Compare(a.Value.Name, b.Value.Name)

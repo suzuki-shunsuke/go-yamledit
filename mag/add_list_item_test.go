@@ -10,7 +10,7 @@ import (
 	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
 )
 
-func ExampleAddValueToList() {
+func ExampleAddValuesToList() {
 	yml := `
 - foo # comment
 - bar
@@ -20,7 +20,7 @@ func ExampleAddValueToList() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := mag.List("$", mag.AddValueToList("zoo", 0))
+	act := mag.List("$", mag.AddValuesToList(0, "zoo"))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func ExampleAddValueToList() {
 	// - bar
 }
 
-func ExampleAddValueToList_negative_index() {
+func ExampleAddValuesToList_negative_index() {
 	yml := `
 - foo # comment
 - bar
@@ -42,7 +42,7 @@ func ExampleAddValueToList_negative_index() {
 		log.Fatal(err)
 	}
 	// Add "zoo" to the last position
-	act := mag.List("$", mag.AddValueToList("zoo", -1))
+	act := mag.List("$", mag.AddValuesToList(-1, "zoo"))
 	if err := act.Run(file.Docs[0].Body); err != nil {
 		log.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 - a
 - b
 `,
-			action: mag.List("$.items", mag.AddValueToList("first", 0)),
+			action: mag.List("$.items", mag.AddValuesToList(0, "first")),
 			want: `items:
 - first
 - a
@@ -81,7 +81,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 - a
 - b
 `,
-			action: mag.List("$.items", mag.AddValueToList("last", 2)),
+			action: mag.List("$.items", mag.AddValuesToList(2, "last")),
 			want: `items:
 - a
 - b
@@ -95,7 +95,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 - b
 - c
 `,
-			action: mag.List("$.items", mag.AddValueToList("mid", 1)),
+			action: mag.List("$.items", mag.AddValuesToList(1, "mid")),
 			want: `items:
 - a
 - mid
@@ -110,7 +110,7 @@ func TestAddListItemAction_Run(t *testing.T) {
   - x
   - y
 `,
-			action: mag.List("$.foo.items", mag.AddValueToList("z", 0)),
+			action: mag.List("$.foo.items", mag.AddValuesToList(0, "z")),
 			want: `foo:
   items:
   - z
@@ -124,7 +124,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 - a # comment1
 - b # comment2
 `,
-			action: mag.List("$.items", mag.AddValueToList("new", 1)),
+			action: mag.List("$.items", mag.AddValuesToList(1, "new")),
 			want: `items:
 - a # comment1
 - new
@@ -150,7 +150,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 			yml: `items:
 - a
 `,
-			action:  mag.List("invalid[", mag.AddValueToList("x", 0)),
+			action:  mag.List("invalid[", mag.AddValuesToList(0, "x")),
 			wantErr: true,
 		},
 		{
@@ -161,7 +161,7 @@ func TestAddListItemAction_Run(t *testing.T) {
 - - c
   - d
 `,
-			action: mag.List("$.items[*]", mag.AddValueToList("new", 0)),
+			action: mag.List("$.items[*]", mag.AddValuesToList(0, "new")),
 			want: `items:
 - - new
   - a

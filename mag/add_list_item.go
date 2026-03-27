@@ -2,6 +2,8 @@ package mag
 
 import (
 	"errors"
+	"fmt"
+	"slices"
 
 	"github.com/goccy/go-yaml/ast"
 )
@@ -10,13 +12,31 @@ import (
 // If error is ErrNoop, no item will be added.
 type AddListItemFunc func(seq *ast.SequenceNode) (any, int, error)
 
-// AddValueToList returns an AddListItem adding the given value at the given index.
-func AddValueToList(value any, idx int) ListAction {
-	s := &staticAddListItemEditor{
-		value: value,
-		idx:   idx,
+// AddValuesToList returns an AddListItem adding the given value at the given index.
+func AddValuesToList(idx int, values ...any) ListAction {
+	return &EditListAction[any]{
+		Edit: func(m *ListValue[any]) ([]Change, error) {
+			newIdx, err := checkInsertIndex(idx, len(m.List))
+			if err != nil {
+				return nil, err
+			}
+			nodes := make([]ast.Node, len(values))
+			for i, v := range values {
+				n, err := valueToNode(v)
+				if err != nil {
+					return nil, fmt.Errorf("convert value to node: %w", err)
+				}
+				nodes[i] = n
+			}
+			return []Change{
+				&ChangeAddItemsToList{
+					List:  m.Node,
+					Index: newIdx,
+					Nodes: nodes,
+				},
+			}, nil
+		},
 	}
-	return &addListItemAction{Add: s.Add}
 }
 
 func AddListItemByFunc(fn AddListItemFunc) ListAction {
@@ -51,11 +71,13 @@ func (a *addListItemAction) Run(seq *ast.SequenceNode) error {
 	return nil
 }
 
-type staticAddListItemEditor struct {
-	value any
-	idx   int
+type ChangeAddItemsToList struct {
+	List  *ast.SequenceNode
+	Nodes []ast.Node
+	Index int
 }
 
-func (e *staticAddListItemEditor) Add(_ *ast.SequenceNode) (any, int, error) {
-	return e.value, e.idx, nil
+func (a *ChangeAddItemsToList) Run() error {
+	a.List.Values = slices.Insert(a.List.Values, a.Index, a.Nodes...)
+	return nil
 }
