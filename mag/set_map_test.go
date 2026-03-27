@@ -176,6 +176,38 @@ age: 10
 `,
 		},
 		{
+			name: "clear comment on update",
+			yml: `name: foo # important
+age: 10
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+				ClearComment: true,
+			})),
+			want: `name: bar
+age: 10
+`,
+		},
+		{
+			name: "clear comment false preserves comment",
+			yml: `name: foo # important
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+				ClearComment: false,
+			})),
+			want: `name: bar # important
+`,
+		},
+		{
+			name: "clear comment on value without comment",
+			yml: `name: foo
+`,
+			action: mag.Map("$", mag.SetKey("name", "bar", &mag.SetKeyOption{
+				ClearComment: true,
+			})),
+			want: `name: bar
+`,
+		},
+		{
 			name:    "invalid yaml path",
 			yml:     `name: foo`,
 			action:  mag.Map("invalid[", mag.SetKey("name", "bar", nil)),

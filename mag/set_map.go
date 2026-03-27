@@ -11,7 +11,6 @@ import (
 
 // TODO
 // comment
-//   [ ] Add comment
 //   [ ] Remove comment
 //   [ ] Edit comment
 
@@ -43,8 +42,9 @@ func SetKey(key, value any, opt *SetKeyOption) MapAction {
 			}
 			return []Change{
 				&ChangeSetValue{
-					Node:  node.Node,
-					Value: value,
+					Node:         node.Node,
+					Value:        value,
+					ClearComment: opt.GetClearComment(),
 				},
 			}, nil
 		},
@@ -74,6 +74,8 @@ type SetKeyOption struct {
 	// The first location that matches the condition will be used.
 	// If empty or no location matches the condition, the new key-value pair will be appended to the end of the map.
 	InsertLocations []*InsertLocation
+	// If true, SetKey will clear the comment of the existing key-value pair if the key already exists.
+	ClearComment bool
 }
 
 func (o *SetKeyOption) GetIgnoreIfKeyNotExist() bool {
@@ -82,6 +84,10 @@ func (o *SetKeyOption) GetIgnoreIfKeyNotExist() bool {
 
 func (o *SetKeyOption) GetIgnoreIfKeyExist() bool {
 	return o != nil && o.IgnoreIfKeyExist
+}
+
+func (o *SetKeyOption) GetClearComment() bool {
+	return o != nil && o.ClearComment
 }
 
 func (o *SetKeyOption) GetInsertLocations() []*InsertLocation {
@@ -128,8 +134,9 @@ func (a *ChangeAddKey) Run() error {
 }
 
 type ChangeSetValue struct {
-	Node  *ast.MappingValueNode
-	Value any
+	Node         *ast.MappingValueNode
+	Value        any
+	ClearComment bool
 }
 
 func (a *ChangeSetValue) Run() error {
@@ -137,7 +144,11 @@ func (a *ChangeSetValue) Run() error {
 	if err != nil {
 		return fmt.Errorf("convert value to node: %w", err)
 	}
-	if err := v.SetComment(a.Node.Value.GetComment()); err != nil {
+	cmt := a.Node.Value.GetComment()
+	if a.ClearComment {
+		cmt = nil
+	}
+	if err := v.SetComment(cmt); err != nil {
 		return fmt.Errorf("set comment to new value: %w", err)
 	}
 	a.Node.Value = v

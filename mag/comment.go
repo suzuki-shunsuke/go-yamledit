@@ -7,6 +7,15 @@ import (
 
 // WithComment adds a comment to a value.
 func WithComment(v any, comment string) any {
+	if node, ok := v.(ast.Node); ok {
+		if comment == "" {
+			// remove comment from node
+			node.SetComment(nil)
+			return node
+		}
+		node.SetComment(commentGroupFromString(comment))
+		return node
+	}
 	if a, ok := v.(*valueWithComment); ok {
 		return &valueWithComment{
 			Value:   a.Value,
