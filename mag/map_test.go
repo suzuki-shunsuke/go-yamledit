@@ -27,7 +27,7 @@ age: 8
 			// Remove the key "age"
 			mag.RemoveKeys("age"),
 			// Rename the key "work" to "job"
-			mag.RenameKey("work", "job"),
+			mag.RenameKey("work", "job", mag.Skip),
 			// Add the key "gender" after "name"
 			mag.SetKey("gender", "male", &mag.SetKeyOption{
 				InsertLocations: []*mag.InsertLocation{

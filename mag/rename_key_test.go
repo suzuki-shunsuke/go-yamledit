@@ -24,10 +24,12 @@ age: 10 # keep comment
 		mag.RenameKey( // Rename name to first_name
 			"name",
 			"first_name",
+			mag.Skip,
 		),
 		mag.RenameKey(
 			"unknown", // unknown key is ignored
 			"unknown-2",
+			mag.Skip,
 		),
 	)
 
@@ -54,7 +56,7 @@ func TestRenameKey(t *testing.T) {
 			yml: `name: foo
 age: 10
 `,
-			action: mag.Map("$", mag.RenameKey("name", "first_name")),
+			action: mag.Map("$", mag.RenameKey("name", "first_name", mag.Skip)),
 			want: `first_name: foo
 age: 10
 `,
@@ -63,7 +65,7 @@ age: 10
 			name: "key not found",
 			yml: `name: foo
 `,
-			action: mag.Map("$", mag.RenameKey("missing", "new_key")),
+			action: mag.Map("$", mag.RenameKey("missing", "new_key", mag.Skip)),
 			want: `name: foo
 `,
 		},
@@ -72,7 +74,7 @@ age: 10
 			yml: `name: foo # important
 age: 10
 `,
-			action: mag.Map("$", mag.RenameKey("name", "first_name")),
+			action: mag.Map("$", mag.RenameKey("name", "first_name", mag.Skip)),
 			want: `first_name: foo # important
 age: 10
 `,
@@ -83,7 +85,7 @@ age: 10
   bar: 1
   baz: 2
 `,
-			action: mag.Map("$.foo", mag.RenameKey("bar", "bar2")),
+			action: mag.Map("$.foo", mag.RenameKey("bar", "bar2", mag.Skip)),
 			want: `foo:
   bar2: 1
   baz: 2
@@ -97,7 +99,7 @@ age: 10
 - name: b
   val: 2
 `,
-			action: mag.Map("$.items[*]", mag.RenameKey("val", "value")),
+			action: mag.Map("$.items[*]", mag.RenameKey("val", "value", mag.Skip)),
 			want: `items:
 - name: a
   value: 1
@@ -106,9 +108,53 @@ age: 10
 `,
 		},
 		{
+			name: "same key noop",
+			yml: `name: foo
+`,
+			action: mag.Map("$", mag.RenameKey("name", "name", mag.Skip)),
+			want: `name: foo
+`,
+		},
+		{
+			name: "skip when duplicate",
+			yml: `name: foo
+first_name: bar
+`,
+			action: mag.Map("$", mag.RenameKey("name", "first_name", mag.Skip)),
+			want: `name: foo
+first_name: bar
+`,
+		},
+		{
+			name: "ignore existing key",
+			yml: `name: foo
+first_name: bar
+`,
+			action: mag.Map("$", mag.RenameKey("name", "first_name", mag.IgnoreExistingKey)),
+			want: `first_name: foo
+`,
+		},
+		{
+			name: "remove old key",
+			yml: `name: foo
+first_name: bar
+`,
+			action: mag.Map("$", mag.RenameKey("name", "first_name", mag.RemoveOldKey)),
+			want: `first_name: bar
+`,
+		},
+		{
+			name: "raise error on duplicate",
+			yml: `name: foo
+first_name: bar
+`,
+			action:  mag.Map("$", mag.RenameKey("name", "first_name", mag.RaiseError)),
+			wantErr: true,
+		},
+		{
 			name:    "invalid yaml path",
 			yml:     `name: foo`,
-			action:  mag.Map("invalid[", mag.RenameKey("name", "new_name")),
+			action:  mag.Map("invalid[", mag.RenameKey("name", "new_name", mag.Skip)),
 			wantErr: true,
 		},
 	}
