@@ -1,4 +1,4 @@
-module github.com/suzuki-shunsuke/mag-go-sdk
+module github.com/suzuki-shunsuke/go-yamledit
 
 go 1.26.1
 

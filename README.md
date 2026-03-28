@@ -1,2 +1,2 @@
-# mag-go-sdk
+# go-yamledit
 Go SDK for mag
