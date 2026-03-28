@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/goccy/go-yaml/parser"
-	"github.com/suzuki-shunsuke/mag-go-sdk/mag"
+	"github.com/suzuki-shunsuke/go-yamledit/mag"
 )
 
 func ExampleEditListAction() {
