@@ -96,8 +96,30 @@ func SetValueToMappingValue(node *ast.MappingValueNode, value any, clearComment 
 	if err := v.SetComment(cmt); err != nil {
 		return fmt.Errorf("set comment to new value: %w", err)
 	}
+	adjustChildColumns(v, node.Key.GetToken().Position.Column)
 	node.Value = v
 	return nil
+}
+
+// adjustChildColumns adjusts column positions of child MappingValueNodes
+// when the value is a MappingNode, so they are indented correctly
+// relative to their parent key.
+func adjustChildColumns(v ast.Node, parentKeyColumn int) {
+	mn, ok := v.(*ast.MappingNode)
+	if !ok {
+		return
+	}
+	childCol := parentKeyColumn + 2 //nolint:mnd
+	for _, child := range mn.Values {
+		if tok := child.Key.GetToken(); tok != nil && tok.Position != nil {
+			tok.Position.Column = childCol
+		}
+		if tok := child.GetToken(); tok != nil && tok.Position != nil {
+			tok.Position.Column = childCol
+		}
+		// Recursively adjust nested mappings
+		adjustChildColumns(child.Value, childCol)
+	}
 }
 
 func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
