@@ -176,6 +176,17 @@ age: 10
 `,
 		},
 		{
+			name: "add new key nested path",
+			yml: `foo:
+  bar: 1
+`,
+			action: yamledit.MapAction("$.foo", yamledit.SetKey("baz", 2, nil)),
+			want: `foo:
+  bar: 1
+  baz: 2
+`,
+		},
+		{
 			name: "clear comment on update",
 			yml: `name: foo # important
 age: 10

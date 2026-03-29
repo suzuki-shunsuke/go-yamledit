@@ -24,6 +24,7 @@ func SetKey(key, value any, opt *SetKeyOption) MappingNodeAction {
 				if err != nil {
 					return fmt.Errorf("convert key/value to node: %w", err)
 				}
+				copyColumnFromSibling(mvn, m.Node)
 				idx := findInsertIndex(opt.GetInsertLocations(), m.KeyValues)
 				m.Node.Values = slices.Insert(m.Node.Values, idx, mvn)
 				return nil
@@ -122,6 +123,18 @@ func findInsertIndex(locations []*InsertLocation, kvs []*KeyValue[any]) int {
 		}
 	}
 	return len(kvs)
+}
+
+// copyColumnFromSibling copies the column position from an existing sibling
+// in the mapping node to the new MappingValueNode so that the new node is
+// serialized at the correct indentation level.
+func copyColumnFromSibling(mvn *ast.MappingValueNode, parent *ast.MappingNode) {
+	if len(parent.Values) == 0 {
+		return
+	}
+	col := parent.Values[0].Key.GetToken().Position.Column
+	mvn.Key.GetToken().Position.Column = col
+	mvn.GetToken().Position.Column = col
 }
 
 func toMappingValueNode(k, v any) (*ast.MappingValueNode, error) {
