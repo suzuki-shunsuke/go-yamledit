@@ -187,6 +187,26 @@ age: 10
 `,
 		},
 		{
+			name: "set key with map value",
+			yml: `aliases: {}
+`,
+			action: yamledit.MapAction("$", yamledit.SetKey("aliases", map[string]string{"my-rule": "https://example.com"}, nil)),
+			want: `aliases:
+  my-rule: https://example.com
+`,
+		},
+		{
+			name: "set key with map value nested",
+			yml: `foo:
+  aliases: {}
+`,
+			action: yamledit.MapAction("$.foo", yamledit.SetKey("aliases", map[string]string{"my-rule": "https://example.com"}, nil)),
+			want: `foo:
+  aliases:
+    my-rule: https://example.com
+`,
+		},
+		{
 			name: "clear comment on update",
 			yml: `name: foo # important
 age: 10
