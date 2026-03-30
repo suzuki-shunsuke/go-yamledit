@@ -10,26 +10,27 @@ import (
 )
 
 // EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
-func EditFile(filePath string, actions ...Action) error {
+// The function returns true if the file was modified, false otherwise.
+func EditFile(filePath string, actions ...Action) (bool, error) {
 	b, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("read file: %w", err)
+		return false, fmt.Errorf("read file: %w", err)
 	}
 	s, err := EditBytes(filePath, b, actions...)
 	if err != nil {
-		return fmt.Errorf("edit bytes: %w", err)
+		return false, fmt.Errorf("edit bytes: %w", err)
 	}
 	if string(b) == s {
-		return nil
+		return false, nil
 	}
 	f, err := os.Stat(filePath)
 	if err != nil {
-		return fmt.Errorf("stat file: %w", err)
+		return false, fmt.Errorf("stat file: %w", err)
 	}
 	if err := os.WriteFile(filePath, []byte(s), f.Mode()); err != nil { //nolint:gosec
-		return fmt.Errorf("edit file: %w", err)
+		return false, fmt.Errorf("edit file: %w", err)
 	}
-	return nil
+	return true, nil
 }
 
 // EditBytes is a helper function that parses a YAML, applies actions to its AST, and returns the modified YAML string.
