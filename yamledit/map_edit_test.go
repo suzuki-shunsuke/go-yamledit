@@ -17,11 +17,7 @@ age: 10 # keep comment 2
 type: yoo # keep comment 3
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	act := yamledit.MapAction(
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
 		"$",
 		yamledit.EditMapAction[string, any](
 			// Change the value of the "name" key to "new name"
@@ -68,11 +64,11 @@ type: yoo # keep comment 3
 				return yamledit.SetValueToMappingValue(kv.Node, "yoo-2", false)
 			},
 		),
-	)
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// name: new name # keep comment
 	// age-2: 10 # keep comment 2

@@ -16,21 +16,16 @@ func ExampleSortList() {
 - bar # comment 2
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	act := yamledit.ListAction(
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
 		"$",
 		yamledit.SortList[string](func(a, b *yamledit.Node[string]) int {
 			return strings.Compare(a.Value, b.Value)
 		}),
-	)
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - bar # comment 2
 	// - foo # comment

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/go-yamledit/yamledit"
 )
 
@@ -13,19 +12,15 @@ func ExampleWithComment() {
 - foo
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	act := yamledit.ListAction(
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
 		"$",
 		// Add "zoo" with comment
 		yamledit.AddValuesToList(1, yamledit.WithComment("zoo", " comment is added")),
-	)
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - foo
 	// - zoo # comment is added

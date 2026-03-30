@@ -15,11 +15,7 @@ name: foo # keep comment
 age: 10
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	act := yamledit.MapAction(
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
 		"$",
 		// Edit name to "ryan"
 		yamledit.SetKey("name", "ryan", nil),
@@ -33,12 +29,11 @@ age: 10
 				},
 			},
 		}),
-	)
-
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// name: ryan # keep comment
 	// gender: male

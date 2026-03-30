@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/go-yamledit/yamledit"
 )
 
@@ -14,15 +13,11 @@ func ExampleAddValuesToList() {
 - bar
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, "zoo")))
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := yamledit.ListAction("$", yamledit.AddValuesToList(0, "zoo"))
-	if err := act.Run(file.Docs[0].Body); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - zoo
 	// - foo # comment
@@ -35,16 +30,12 @@ func ExampleAddValuesToList_negative_index() {
 - bar
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	// Add "zoo" to the last position
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, "zoo")))
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Add "zoo" to the last position
-	act := yamledit.ListAction("$", yamledit.AddValuesToList(-1, "zoo"))
-	if err := act.Run(file.Docs[0].Body); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - foo # comment
 	// - bar
@@ -56,18 +47,14 @@ func ExampleAddValuesToList_with_list_bytes() {
 - foo # comment
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, yamledit.NewListBytes([]byte(`
+- bar # comment 1
+- zoo # comment 2
+`)))))
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := yamledit.ListAction("$", yamledit.AddValuesToList(-1, yamledit.NewListBytes([]byte(`
-- bar # comment 1
-- zoo # comment 2
-`))))
-	if err := act.Run(file.Docs[0].Body); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - foo # comment
 	// - bar # comment 1

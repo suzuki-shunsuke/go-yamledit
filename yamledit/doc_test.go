@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/go-yamledit/yamledit"
 )
 
@@ -23,11 +22,7 @@ children:
 		Name string
 	}
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	actions := []yamledit.Action{
+	s, err := yamledit.EditBytes([]byte(yml),
 		yamledit.MapAction(
 			"$",
 			// Edit name to "ryan"
@@ -59,14 +54,11 @@ children:
 			yamledit.SortList[Child](func(a, b *yamledit.Node[Child]) int {
 				return strings.Compare(a.Value.Name, b.Value.Name)
 			}),
-		),
+		))
+	if err != nil {
+		log.Fatal(err)
 	}
-	for _, act := range actions {
-		if err := act.Run(file.Docs[0].Body); err != nil {
-			log.Fatal(err)
-		}
-	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// name: ryan # comment is kept
 	// gender: male

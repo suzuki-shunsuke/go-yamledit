@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/goccy/go-yaml/ast"
-	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/go-yamledit/yamledit"
 )
 
@@ -125,15 +124,11 @@ func ExampleNewBytes() {
 - foo # comment
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
+	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, yamledit.NewBytes([]byte("hello # world")))))
 	if err != nil {
 		log.Fatal(err)
 	}
-	act := yamledit.ListAction("$", yamledit.AddValuesToList(0, yamledit.NewBytes([]byte("hello # world"))))
-	if err := act.Run(file.Docs[0].Body); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - hello # world
 	// - foo # comment
