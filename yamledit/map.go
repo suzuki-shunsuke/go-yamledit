@@ -44,6 +44,9 @@ func (a *mapActions) Run(node ast.Node) error {
 	if err != nil {
 		return fmt.Errorf("filter node by YAML Path: %w", err)
 	}
+	if n == nil {
+		return nil
+	}
 	nodes, err := flatten(n, -1)
 	if err != nil {
 		return err
