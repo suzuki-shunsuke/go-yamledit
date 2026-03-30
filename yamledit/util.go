@@ -11,17 +11,13 @@ import (
 
 // EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
 func EditFile(path string, actions ...Action) error {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("read file: %w", err)
-	}
 	f, err := os.Stat(path)
 	if err != nil {
 		return fmt.Errorf("stat file: %w", err)
 	}
-	file, err := parser.ParseBytes(b, parser.ParseComments)
+	file, err := parser.ParseFile(path, parser.ParseComments)
 	if err != nil {
-		return fmt.Errorf("parse YAML: %w", err)
+		return fmt.Errorf("parse file: %w", err)
 	}
 	for _, doc := range file.Docs {
 		for _, act := range actions {
@@ -34,6 +30,22 @@ func EditFile(path string, actions ...Action) error {
 		return fmt.Errorf("edit file: %w", err)
 	}
 	return nil
+}
+
+// EditBytes is a helper function that parses a YAML, applies actions to its AST, and returns the modified YAML string.
+func EditBytes(b []byte, actions ...Action) (string, error) {
+	file, err := parser.ParseBytes(b, parser.ParseComments)
+	if err != nil {
+		return "", fmt.Errorf("parse YAML: %w", err)
+	}
+	for _, doc := range file.Docs {
+		for _, act := range actions {
+			if err := act.Run(doc.Body); err != nil {
+				return "", fmt.Errorf("run action: %w", err)
+			}
+		}
+	}
+	return file.String(), nil
 }
 
 // BytesToNode parses the given YAML bytes and returns the root node.
