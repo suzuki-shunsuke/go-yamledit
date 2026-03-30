@@ -26,7 +26,7 @@ func EditFile(path string, actions ...Action) error {
 	if err != nil {
 		return fmt.Errorf("stat file: %w", err)
 	}
-	if err := os.WriteFile(path, []byte(file.String()), f.Mode()); err != nil { //nolint:gosec,mnd
+	if err := os.WriteFile(path, []byte(file.String()), f.Mode()); err != nil {
 		return fmt.Errorf("edit file: %w", err)
 	}
 	return nil
