@@ -2,11 +2,39 @@ package yamledit
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 )
+
+// EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
+func EditFile(path string, actions ...Action) error {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read file: %w", err)
+	}
+	f, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("stat file: %w", err)
+	}
+	file, err := parser.ParseBytes(b, parser.ParseComments)
+	if err != nil {
+		return fmt.Errorf("parse YAML: %w", err)
+	}
+	for _, doc := range file.Docs {
+		for _, act := range actions {
+			if err := act.Run(doc.Body); err != nil {
+				return fmt.Errorf("run action: %w", err)
+			}
+		}
+	}
+	if err := os.WriteFile(path, []byte(file.String()), f.Mode()); err != nil { //nolint:gosec,mnd
+		return fmt.Errorf("edit file: %w", err)
+	}
+	return nil
+}
 
 // BytesToNode parses the given YAML bytes and returns the root node.
 // Returns an error if the bytes cannot be parsed.
