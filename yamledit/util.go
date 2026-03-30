@@ -2,11 +2,55 @@ package yamledit
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 )
+
+// EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
+// The function returns true if the file was modified, false otherwise.
+func EditFile(filePath string, actions ...Action) (bool, error) {
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		return false, fmt.Errorf("read file: %w", err)
+	}
+	s, err := EditBytes(filePath, b, actions...)
+	if err != nil {
+		return false, fmt.Errorf("edit bytes: %w", err)
+	}
+	if string(b) == s {
+		return false, nil
+	}
+	f, err := os.Stat(filePath)
+	if err != nil {
+		return false, fmt.Errorf("stat file: %w", err)
+	}
+	if err := os.WriteFile(filePath, []byte(s), f.Mode()); err != nil { //nolint:gosec
+		return false, fmt.Errorf("edit file: %w", err)
+	}
+	return true, nil
+}
+
+// EditBytes is a helper function that parses a YAML, applies actions to its AST, and returns the modified YAML string.
+// filePath is used to set the file name in the AST, which is useful for error messages.
+// Even if the file doesn't exist actually, there is no problem.
+func EditBytes(filePath string, b []byte, actions ...Action) (string, error) {
+	file, err := parser.ParseBytes(b, parser.ParseComments)
+	if err != nil {
+		return "", fmt.Errorf("parse YAML: %w", err)
+	}
+	file.Name = filePath
+	for _, doc := range file.Docs {
+		for _, act := range actions {
+			if err := act.Run(doc.Body); err != nil {
+				return "", fmt.Errorf("run action: %w", err)
+			}
+		}
+	}
+	return file.String(), nil
+}
 
 // BytesToNode parses the given YAML bytes and returns the root node.
 // Returns an error if the bytes cannot be parsed.

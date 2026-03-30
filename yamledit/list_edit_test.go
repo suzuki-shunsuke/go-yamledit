@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/goccy/go-yaml/parser"
 	"github.com/suzuki-shunsuke/go-yamledit/yamledit"
 )
 
@@ -14,22 +13,18 @@ func ExampleEditListAction() {
 - bar # comment
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	act := yamledit.ListAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction(
 		"$",
 		yamledit.EditListAction[string](
 			func(m *yamledit.List[string]) error {
 				return yamledit.RemoveValuesFromSequenceNode(m.Node, 0)
 			},
 		),
-	)
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// - bar # comment
 }

@@ -30,11 +30,7 @@ age: 10
 job: engineer
 `
 
-	file, err := parser.ParseBytes([]byte(yml), parser.ParseComments)
-	if err != nil {
-		log.Fatal(err)
-	}
-	act := yamledit.MapAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.MapAction(
 		"$",
 		yamledit.SortKey(func(a, b *yamledit.KeyValue[string]) int {
 			if a.Key == b.Key {
@@ -45,12 +41,11 @@ job: engineer
 			}
 			return 1
 		}),
-	)
-
-	if err := act.Run(file.Docs[0].Body); err != nil {
+	))
+	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(file.String())
+	fmt.Println(s)
 	// Output:
 	// age: 10
 	// job: engineer
