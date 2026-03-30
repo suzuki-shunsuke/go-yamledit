@@ -11,10 +11,6 @@ import (
 
 // EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
 func EditFile(path string, actions ...Action) error {
-	f, err := os.Stat(path)
-	if err != nil {
-		return fmt.Errorf("stat file: %w", err)
-	}
 	file, err := parser.ParseFile(path, parser.ParseComments)
 	if err != nil {
 		return fmt.Errorf("parse file: %w", err)
@@ -25,6 +21,10 @@ func EditFile(path string, actions ...Action) error {
 				return fmt.Errorf("run action: %w", err)
 			}
 		}
+	}
+	f, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("stat file: %w", err)
 	}
 	if err := os.WriteFile(path, []byte(file.String()), f.Mode()); err != nil { //nolint:gosec,mnd
 		return fmt.Errorf("edit file: %w", err)
