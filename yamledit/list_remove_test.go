@@ -14,7 +14,7 @@ children:
   - bar # comment 2
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction(
 		"$.children",
 		// Remove foo
 		yamledit.RemoveValuesFromList[string](func(value *yamledit.Node[string]) (bool, error) {

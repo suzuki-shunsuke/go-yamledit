@@ -15,7 +15,7 @@ name: foo
 age: 10 # keep comment
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.MapAction(
 		"$",
 		yamledit.RenameKey( // Rename name to first_name
 			"name",

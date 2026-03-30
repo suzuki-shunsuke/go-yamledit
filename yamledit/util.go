@@ -10,34 +10,37 @@ import (
 )
 
 // EditFile is a helper function that reads a YAML file, applies actions to its AST, and writes it back.
-func EditFile(path string, actions ...Action) error {
-	file, err := parser.ParseFile(path, parser.ParseComments)
+func EditFile(filePath string, actions ...Action) error {
+	b, err := os.ReadFile(filePath)
 	if err != nil {
-		return fmt.Errorf("parse file: %w", err)
+		return fmt.Errorf("read file: %w", err)
 	}
-	for _, doc := range file.Docs {
-		for _, act := range actions {
-			if err := act.Run(doc.Body); err != nil {
-				return fmt.Errorf("run action: %w", err)
-			}
-		}
+	s, err := EditBytes(filePath, b, actions...)
+	if err != nil {
+		return fmt.Errorf("edit bytes: %w", err)
 	}
-	f, err := os.Stat(path)
+	if string(b) == s {
+		return nil
+	}
+	f, err := os.Stat(filePath)
 	if err != nil {
 		return fmt.Errorf("stat file: %w", err)
 	}
-	if err := os.WriteFile(path, []byte(file.String()), f.Mode()); err != nil {
+	if err := os.WriteFile(filePath, []byte(s), f.Mode()); err != nil {
 		return fmt.Errorf("edit file: %w", err)
 	}
 	return nil
 }
 
 // EditBytes is a helper function that parses a YAML, applies actions to its AST, and returns the modified YAML string.
-func EditBytes(b []byte, actions ...Action) (string, error) {
+// filePath is used to set the file name in the AST, which is useful for error messages.
+// Even if the file doesn't exist actually, there is no problem.
+func EditBytes(filePath string, b []byte, actions ...Action) (string, error) {
 	file, err := parser.ParseBytes(b, parser.ParseComments)
 	if err != nil {
 		return "", fmt.Errorf("parse YAML: %w", err)
 	}
+	file.Name = filePath
 	for _, doc := range file.Docs {
 		for _, act := range actions {
 			if err := act.Run(doc.Body); err != nil {

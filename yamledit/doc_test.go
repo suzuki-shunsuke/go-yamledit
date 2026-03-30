@@ -22,7 +22,7 @@ children:
 		Name string
 	}
 
-	s, err := yamledit.EditBytes([]byte(yml),
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml),
 		yamledit.MapAction(
 			"$",
 			// Edit name to "ryan"

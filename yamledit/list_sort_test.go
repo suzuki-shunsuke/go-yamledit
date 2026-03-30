@@ -16,7 +16,7 @@ func ExampleSortList() {
 - bar # comment 2
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction(
 		"$",
 		yamledit.SortList[string](func(a, b *yamledit.Node[string]) int {
 			return strings.Compare(a.Value, b.Value)

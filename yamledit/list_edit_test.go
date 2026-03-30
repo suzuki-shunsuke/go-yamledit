@@ -13,7 +13,7 @@ func ExampleEditListAction() {
 - bar # comment
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction(
 		"$",
 		yamledit.EditListAction[string](
 			func(m *yamledit.List[string]) error {

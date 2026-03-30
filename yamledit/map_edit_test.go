@@ -17,7 +17,7 @@ age: 10 # keep comment 2
 type: yoo # keep comment 3
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.MapAction(
 		"$",
 		yamledit.EditMapAction[string, any](
 			// Change the value of the "name" key to "new name"

@@ -14,7 +14,7 @@ work: engineer
 age: 8
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.MapAction(
 		"$",
 		// Edit name to "ryan"
 		yamledit.SetKey("name", "ryan", nil),

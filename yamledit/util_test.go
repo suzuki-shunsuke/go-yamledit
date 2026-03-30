@@ -102,7 +102,7 @@ name: updated
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := yamledit.EditBytes([]byte(tt.yml), tt.actions...)
+			got, err := yamledit.EditBytes("example.yaml", []byte(tt.yml), tt.actions...)
 			if tt.wantErr {
 				if err == nil {
 					t.Fatal("expected error, got nil")
@@ -124,7 +124,7 @@ func ExampleNewBytes() {
 - foo # comment
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, yamledit.NewBytes([]byte("hello # world")))))
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, yamledit.NewBytes([]byte("hello # world")))))
 	if err != nil {
 		log.Fatal(err)
 	}

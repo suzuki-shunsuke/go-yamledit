@@ -13,7 +13,7 @@ func ExampleAddValuesToList() {
 - bar
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, "zoo")))
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(0, "zoo")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func ExampleAddValuesToList_negative_index() {
 `
 
 	// Add "zoo" to the last position
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, "zoo")))
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, "zoo")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func ExampleAddValuesToList_with_list_bytes() {
 - foo # comment
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, yamledit.NewListBytes([]byte(`
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction("$", yamledit.AddValuesToList(-1, yamledit.NewListBytes([]byte(`
 - bar # comment 1
 - zoo # comment 2
 `)))))

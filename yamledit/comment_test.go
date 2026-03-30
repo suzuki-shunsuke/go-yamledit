@@ -12,7 +12,7 @@ func ExampleWithComment() {
 - foo
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.ListAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.ListAction(
 		"$",
 		// Add "zoo" with comment
 		yamledit.AddValuesToList(1, yamledit.WithComment("zoo", " comment is added")),

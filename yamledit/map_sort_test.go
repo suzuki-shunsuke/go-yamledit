@@ -30,7 +30,7 @@ age: 10
 job: engineer
 `
 
-	s, err := yamledit.EditBytes([]byte(yml), yamledit.MapAction(
+	s, err := yamledit.EditBytes("example.yaml", []byte(yml), yamledit.MapAction(
 		"$",
 		yamledit.SortKey(func(a, b *yamledit.KeyValue[string]) int {
 			if a.Key == b.Key {
