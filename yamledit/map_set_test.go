@@ -202,6 +202,36 @@ age: 10
 `,
 		},
 		{
+			name: "add new key with map value nested",
+			yml: `foo:
+  bar: 1
+`,
+			action: yamledit.MapAction("$.foo", yamledit.SetKey("baz", map[string]any{"qux": false}, nil)),
+			want: `foo:
+  bar: 1
+  baz:
+    qux: false
+`,
+		},
+		{
+			name: "add new key with map value in list",
+			yml: `jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+`,
+			action: yamledit.MapAction("$.jobs..steps[*]", yamledit.SetKey("with", map[string]any{"persist-credential": false}, nil)),
+			want: `jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credential: false
+`,
+		},
+		{
 			name: "clear comment on update",
 			yml: `name: foo # important
 age: 10
