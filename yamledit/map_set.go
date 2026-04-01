@@ -25,6 +25,7 @@ func SetKey(key, value any, opt *SetKeyOption) MappingNodeAction {
 					return fmt.Errorf("convert key/value to node: %w", err)
 				}
 				copyColumnFromSibling(mvn, m.Node)
+				adjustChildColumns(mvn.Value, mvn.Key.GetToken().Position.Column)
 				idx := findInsertIndex(opt.GetInsertLocations(), m.KeyValues)
 				m.Node.Values = slices.Insert(m.Node.Values, idx, mvn)
 				return nil
