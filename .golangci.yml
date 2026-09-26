@@ -48,6 +48,8 @@ linters:
       - path: _test\.go
         linters:
           - goconst
+          # Type assertions in tests are expected to succeed. A panic fails the test.
+          - forcetypeassert
 formatters:
   enable:
     - gci
